@@ -64,6 +64,9 @@ public class ChessPiece {
             case BISHOP:
                 moves = getBishopMoves(board, myPosition);
                 break;
+            case KNIGHT:
+                moves = getKnightMoves(board, myPosition);
+                break;
             default:
                 moves = new ArrayList<>();
         }
@@ -184,6 +187,30 @@ public class ChessPiece {
         diagonalMoves(+1, -1, board, pos, moves);
         // diagonal up-right
         diagonalMoves(+1, +1, board, pos, moves);
+        return moves;
+    }
+
+    // checks the Knight's moves
+    private Collection<ChessMove> getKnightMoves(ChessBoard board, ChessPosition pos){
+        Collection<ChessMove> moves = new ArrayList<>();
+        int[][] positions = new int[][]{
+            {2,-1}, {2,1}, {-2,-1}, {-2,1},
+            {1,-2}, {1,2}, {-1,-2}, {-1,2}
+        };
+        // cycles through each possible move for a knight and adds moves if it meets condiitons.
+        for(int[] dir: positions){
+            ChessPosition position = new ChessPosition(pos.getRow()+dir[0], pos.getColumn()+dir[1]);
+            ChessMove move = new ChessMove(pos, position, null);
+            // if the position is in bounds
+            if(inBounds(position) &&
+            // if the position has a piece, and it's not the same color
+            ((board.getPiece(position) != null && !colorCheck(this.getTeamColor(), position, board)
+            // or the position doesn't have a piece on it
+            || board.getPiece(position) == null))){
+                moves.add(move);
+            }
+        }
+
         return moves;
     }
 
