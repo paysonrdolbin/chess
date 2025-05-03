@@ -98,7 +98,10 @@ public class ChessPiece {
         Collection<ChessMove> moves = new ArrayList<>();
         // checks the vertical and horizontal moves using Rook's function
         Collection<ChessMove> rookMoves = getRookMoves(board, pos);
+        // checks diagonal moves using Bishop's function
         Collection<ChessMove> bishopMoves = getBishopMoves(board, pos);
+        moves.addAll(rookMoves);
+        moves.addAll(bishopMoves);
 
         return moves;
     }
@@ -172,7 +175,7 @@ public class ChessPiece {
 
     // checks the Bishop's moves
     private Collection<ChessMove> getBishopMoves(ChessBoard board, ChessPosition pos){
-        Collection<ChessMove> moves = new ArrayList<ChessMove>();
+        Collection<ChessMove> moves = new ArrayList<>();
         // diagonal down-left
         diagonalMoves(-1,-1, board, pos, moves);
         // diagonal down-right
@@ -207,12 +210,8 @@ public class ChessPiece {
 
     // helper function to check if the position being checked contains a piece of the same color
     private boolean colorCheck(ChessGame.TeamColor color, ChessPosition pos, ChessBoard board){
-        if(board.getPiece(pos) != null){
-            if(board.getPiece(pos).getTeamColor() == color){
-                return true;
-            } else {
-                return false;
-            }
+        if(board.getPiece(pos) != null && board.getPiece(pos).getTeamColor() == color){
+            return true;
         }
         return false;
     }
@@ -221,8 +220,7 @@ public class ChessPiece {
     private boolean inBounds(ChessPosition pos){
         if (pos.getRow() >= 1 && pos.getRow() < 9 && pos.getColumn() >= 1 && pos.getColumn() < 9){
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 }
