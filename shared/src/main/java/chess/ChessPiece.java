@@ -2,6 +2,7 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * Represents a single chess piece
@@ -14,6 +15,20 @@ public class ChessPiece {
     private final ChessGame.TeamColor color;
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.color = pieceColor; this.pieceType = type;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessPiece that = (ChessPiece) o;
+        return pieceType == that.pieceType && color == that.color;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pieceType, color);
     }
 
     /**
@@ -119,13 +134,16 @@ public class ChessPiece {
         int rowAbove = pos.getRow() + 1;
         while(rowAbove <= 8){
             ChessPosition moveCheck= new ChessPosition(rowAbove, pos.getColumn());
+            ChessMove move = new ChessMove(pos, moveCheck, null);
             if(board.getPiece(moveCheck) != null){
+                if(!colorCheck(this.getTeamColor(), moveCheck, board)){
+                    moves.add(move);
+                }
                 break;
-            }
-            if(!colorCheck(this.getTeamColor(), moveCheck, board)){
-                ChessMove move = new ChessMove(pos, moveCheck, null);
+            } else {
                 moves.add(move);
             }
+
             rowAbove++;
         }
 
@@ -133,19 +151,22 @@ public class ChessPiece {
         int rowBelow = pos.getRow()-1;
         while(rowBelow >= 1){
             ChessPosition moveCheck= new ChessPosition(rowBelow, pos.getColumn());
+            ChessMove move = new ChessMove(pos, moveCheck, null);
             if(board.getPiece(moveCheck) != null){
+                if(!colorCheck(this.getTeamColor(), moveCheck, board)){
+                    moves.add(move);
+                }
                 break;
-            }
-            if(!colorCheck(this.getTeamColor(), moveCheck, board)){
-                ChessMove move = new ChessMove(pos, moveCheck, null);
+            } else{
                 moves.add(move);
             }
+
             rowBelow--;
         }
 
         // check horizontal moves to the right
         int colRight = pos.getColumn()+1;
-        while(colRight >= 1){
+        while(colRight <= 8){
             ChessPosition moveCheck= new ChessPosition(pos.getRow(), colRight);
             ChessMove move = new ChessMove(pos, moveCheck, null);
             if(board.getPiece(moveCheck) != null){
@@ -216,6 +237,7 @@ public class ChessPiece {
         return moves;
     }
 
+    // checks the Pawn's moves
     private Collection<ChessMove> getPawnMoves(ChessBoard board, ChessPosition pos){
         Collection<ChessMove> moves = new ArrayList<>();
         // list of all potential promotion piece types
