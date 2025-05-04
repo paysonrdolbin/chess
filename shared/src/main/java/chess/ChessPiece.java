@@ -247,15 +247,15 @@ public class ChessPiece {
         // Black pawn's potential moves
         if(this.getTeamColor() == ChessGame.TeamColor.BLACK){
             // move 2 spaces starting move
+            ChessPosition oneBelow = new ChessPosition(pos.getRow()-1, pos.getColumn());
             if(pos.getRow() == 7){
                 ChessPosition twoBelow = new ChessPosition(5, pos.getColumn());
-                if(board.getPiece(twoBelow) == null){
+                if(board.getPiece(twoBelow) == null && board.getPiece(oneBelow) == null){
                     ChessMove move2Below = new ChessMove(pos, twoBelow, null);
                     moves.add(move2Below);
                 }
             }
             // move 1 space
-            ChessPosition oneBelow = new ChessPosition(pos.getRow()-1, pos.getColumn());
             if(board.getPiece(oneBelow) == null && inBounds(oneBelow)){
                 // if it's the last row, then adds move for each type of piece promotion
                 if(oneBelow.getRow() == 1){
@@ -272,8 +272,15 @@ public class ChessPiece {
             for(int i : diagonals){
                 ChessPosition diagonal = new ChessPosition(pos.getRow()-1, pos.getColumn()+i);
                 if(inBounds(diagonal) && board.getPiece(diagonal) != null && board.getPiece(diagonal).getTeamColor() != ChessGame.TeamColor.BLACK){
-                    ChessMove killMove = new ChessMove(pos, diagonal, null);
-                    moves.add(killMove);
+                    if(diagonal.getRow() == 1){
+                        for(PieceType type: promotions){
+                            ChessMove killMove = new ChessMove(pos, diagonal, type);
+                            moves.add(killMove);
+                        }
+                    } else{
+                        ChessMove killMove = new ChessMove(pos, diagonal, null);
+                        moves.add(killMove);
+                    }
                 }
             }
         }
@@ -281,15 +288,15 @@ public class ChessPiece {
         // White pawn's potential moves
         if(this.getTeamColor() == ChessGame.TeamColor.WHITE){
             // move 2 spaces starting move
+            ChessPosition oneAbove = new ChessPosition(pos.getRow()+1, pos.getColumn());
             if(pos.getRow() == 2){
                 ChessPosition twoAbove = new ChessPosition(4, pos.getColumn());
-                if(board.getPiece(twoAbove) == null){
+                if(board.getPiece(twoAbove) == null && board.getPiece(oneAbove) == null){
                     ChessMove move2Above = new ChessMove(pos, twoAbove, null);
                     moves.add(move2Above);
                 }
             }
             // move 1 space
-            ChessPosition oneAbove = new ChessPosition(pos.getRow()+1, pos.getColumn());
             if(board.getPiece(oneAbove) == null && inBounds(oneAbove)){
                 // if it's the last row, then adds move for each type of piece promotion
                 if(oneAbove.getRow() == 8){
@@ -302,11 +309,19 @@ public class ChessPiece {
                     moves.add(move);
                 }
             }
+            // diagonal kill
             for(int i : diagonals){
                 ChessPosition diagonal = new ChessPosition(pos.getRow()+1, pos.getColumn()+i);
                 if(inBounds(diagonal) && board.getPiece(diagonal) != null && board.getPiece(diagonal).getTeamColor() != ChessGame.TeamColor.WHITE){
-                    ChessMove killMove = new ChessMove(pos, diagonal, null);
-                    moves.add(killMove);
+                    if(diagonal.getRow() == 8){
+                        for(PieceType type: promotions){
+                            ChessMove killMove = new ChessMove(pos, diagonal, type);
+                            moves.add(killMove);
+                        }
+                    } else{
+                        ChessMove killMove = new ChessMove(pos, diagonal, null);
+                        moves.add(killMove);
+                    }
                 }
             }
         }
