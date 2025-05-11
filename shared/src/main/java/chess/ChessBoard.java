@@ -15,7 +15,6 @@ public class ChessBoard {
         
     }
 
-    // Unfortunately, I wrote a lot of code using
 
     private int rowFix(ChessPosition pos){
         return 8 - pos.getRow();
