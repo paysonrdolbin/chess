@@ -1,6 +1,9 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -9,7 +12,8 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 public class ChessGame {
-
+    private TeamColor teamColor;
+    private chess.ChessBoard board;
     public ChessGame() {
 
     }
@@ -18,7 +22,7 @@ public class ChessGame {
      * @return Which team's turn it is
      */
     public TeamColor getTeamTurn() {
-        throw new RuntimeException("Not implemented");
+        return teamColor;
     }
 
     /**
@@ -27,7 +31,7 @@ public class ChessGame {
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        throw new RuntimeException("Not implemented");
+        teamColor = team;
     }
 
     /**
@@ -46,7 +50,22 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece piece = board.getPiece(startPosition);
+        Collection<ChessMove> allMoves = piece.pieceMoves(board, startPosition);
+        Collection<ChessMove> validMoves = new ArrayList<>();
+        if(allMoves.isEmpty()){
+            return null;
+        }
+        TeamColor color = piece.getTeamColor();
+        ChessBoard oldBoard = board;
+        for(ChessMove move: allMoves){
+            makeMove(move);
+            if(!isInCheck(color)){
+                validMoves.add(move);
+            }
+            board = oldBoard;
+        }
+        return validMoves;
     }
 
     /**
@@ -55,8 +74,10 @@ public class ChessGame {
      * @param move chess move to perform
      * @throws InvalidMoveException if move is invalid
      */
-    public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+    public void makeMove(ChessMove move) {
+        ChessPiece piece = board.getPiece(move.getStartPosition());
+        board.addPiece(move.getEndPosition(), piece);
+        board.addPiece(move.getStartPosition(), null);
     }
 
     /**
@@ -66,7 +87,24 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        TeamColor oppColor;
+        if(teamColor == TeamColor.WHITE){
+            oppColor = TeamColor.BLACK;
+        } else {
+            oppColor = TeamColor.WHITE;
+        }
+        Map<ChessPosition, ChessPiece> team = teamPieces(teamColor);
+        Map<ChessPosition, ChessPiece> oppPieces = teamPieces(oppColor);
+        for (Map.Entry<ChessPosition, ChessPiece> entry : oppPieces.entrySet()) {
+            ChessPosition pos = entry.getKey();
+            ChessPiece piece = entry.getValue();
+            for(ChessMove move: piece.pieceMoves(board, pos)){
+                if(team.get(pos) != null && team.get(pos).getPieceType() == ChessPiece.PieceType.KING){
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -76,7 +114,15 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        Map<ChessPosition, ChessPiece> pieces = teamPieces(teamColor);
+        if(isInCheck(teamColor)){
+            for(Map.Entry<ChessPosition, ChessPiece> entry: pieces.entrySet()){
+                if(validMoves(entry.getKey()) != null){
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -105,6 +151,20 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented");
+        return board;
+    }
+
+    public Map<ChessPosition, ChessPiece> teamPieces(TeamColor color) {
+        Map<ChessPosition, ChessPiece> pieces = new HashMap<>();
+        for (int r = 1; r <= 8; r++) {
+            for (int c = 1; c <= 8; c++) {
+                ChessPosition pos = new ChessPosition(r, c);
+                ChessPiece piece = board.getPiece(pos);
+                if (piece != null && piece.getTeamColor() == color) {
+                    pieces.put(pos, piece);
+                }
+            }
+        }
+        return pieces;
     }
 }
