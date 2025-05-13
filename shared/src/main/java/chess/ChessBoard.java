@@ -93,15 +93,32 @@ public class ChessBoard {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) {
-            return false;
+        if (this == o) return true;
+        if (!(o instanceof ChessBoard)) return false;
+        ChessBoard other = (ChessBoard) o;
+
+        for (int r = 1; r <= 8; r++) {
+            for (int c = 1; c <= 8; c++) {
+                ChessPosition pos = new ChessPosition(r, c);
+                ChessPiece p1 = this.getPiece(pos);
+                ChessPiece p2 = other.getPiece(pos);
+                if (!Objects.equals(p1, p2)) {
+                    return false;
+                }
+            }
         }
-        ChessBoard that = (ChessBoard) o;
-        return Objects.deepEquals(squares, that.squares);
+        return true;
     }
 
     @Override
     public int hashCode() {
-        return Arrays.deepHashCode(squares);
+        int result = 1;
+        for (int r = 1; r <= 8; r++) {
+            for (int c = 1; c <= 8; c++) {
+                ChessPiece piece = this.getPiece(new ChessPosition(r, c));
+                result = 31 * result + (piece != null ? piece.hashCode() : 0);
+            }
+        }
+        return result;
     }
 }
