@@ -95,26 +95,33 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        // makes sure there's actually a piece at the start location
 
+        // makes sure there's actually a piece at the start location
         if(board.getPiece(move.getStartPosition()) == null){
             throw new InvalidMoveException("No piece at this location");
+        // makes sure not trying to make a move out of turn
         } else if(board.getPiece(move.getStartPosition()).getTeamColor() != this.teamColor){
             throw new InvalidMoveException("Move cannot be made out of turn.");
         } else{
             ChessPiece piece = board.getPiece(move.getStartPosition());
             Collection<ChessMove> legalMoves = validMoves(move.getStartPosition());
-            // makes sure the move is actually valid.
+
+            // won't allow an invalid move
             if(legalMoves == null || !legalMoves.contains(move)){
                 throw new InvalidMoveException("This move isn't valid");
             }
+
+            // changes the piece if it's a promotion
             if(move.getPromotionPiece() != null){
                 ChessPiece promotePiece = new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
                 board.addPiece(move.getEndPosition(), promotePiece);
             } else{
                 board.addPiece(move.getEndPosition(), piece);
             }
+            // changes the piece at starting position back to null
             board.addPiece(move.getStartPosition(), null);
+
+            // changes the turn
             if(teamColor == TeamColor.BLACK){
                 teamColor = TeamColor.WHITE;
             } else{
@@ -194,6 +201,7 @@ public class ChessGame {
         }
         return false;
     }
+
 
     /**
      * Sets this game's chessboard with a given board
