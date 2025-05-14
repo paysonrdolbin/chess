@@ -143,14 +143,21 @@ public class ChessGame {
         } else {
             oppColor = TeamColor.WHITE;
         }
+        // makes maps for the player's team's pieces, and the opponent's team's pieces
         Map<ChessPosition, ChessPiece> team = teamPieces(teamColor);
         Map<ChessPosition, ChessPiece> oppPieces = teamPieces(oppColor);
         ChessPosition posKing;
+
+        // searches for the king and get's its location
         for (Map.Entry<ChessPosition, ChessPiece> entry : team.entrySet()) {
             if(entry.getValue().getPieceType() == ChessPiece.PieceType.KING){
                 posKing = entry.getKey();
+
+                // searches through each of the opponent's pieces
                 for (Map.Entry<ChessPosition, ChessPiece> entry1: oppPieces.entrySet()){
                     Collection<ChessMove> moves = entry1.getValue().pieceMoves(board, entry1.getKey());
+
+                    // checks each of their moves for potential check causing moves
                     for(ChessMove move: moves){
                         if(move.getEndPosition().equals(posKing)){
                             return true;
@@ -221,6 +228,7 @@ public class ChessGame {
         return board;
     }
 
+// shuffles through the whole board and adds the pieces of a certain color and their relative locations to a map
     public Map<ChessPosition, ChessPiece> teamPieces(TeamColor color) {
         Map<ChessPosition, ChessPiece> pieces = new HashMap<>();
         for (int r = 1; r <= 8; r++) {
