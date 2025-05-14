@@ -62,14 +62,14 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
+        Collection<ChessMove> validMoves = new ArrayList<>();
         ChessPiece piece = board.getPiece(startPosition);
         if(piece == null){
-            return null;
+            return validMoves;
         }
         Collection<ChessMove> allMoves = piece.pieceMoves(board, startPosition);
-        Collection<ChessMove> validMoves = new ArrayList<>();
         if(allMoves.isEmpty()){
-            return null;
+            return validMoves;
         }
         TeamColor color = piece.getTeamColor();
         for(ChessMove move: allMoves){
@@ -96,8 +96,11 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         // makes sure there's actually a piece at the start location
+
         if(board.getPiece(move.getStartPosition()) == null){
             throw new InvalidMoveException("No piece at this location");
+        } else if(board.getPiece(move.getStartPosition()).getTeamColor() != this.teamColor){
+            throw new InvalidMoveException("Move cannot be made out of turn.");
         } else{
             ChessPiece piece = board.getPiece(move.getStartPosition());
             Collection<ChessMove> legalMoves = validMoves(move.getStartPosition());
@@ -105,7 +108,12 @@ public class ChessGame {
             if(legalMoves == null || !legalMoves.contains(move)){
                 throw new InvalidMoveException("This move isn't valid");
             }
-            board.addPiece(move.getEndPosition(), piece);
+            if(move.getPromotionPiece() != null){
+                ChessPiece promotePiece = new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
+                board.addPiece(move.getEndPosition(), promotePiece);
+            } else{
+                board.addPiece(move.getEndPosition(), piece);
+            }
             board.addPiece(move.getStartPosition(), null);
             if(teamColor == TeamColor.BLACK){
                 teamColor = TeamColor.WHITE;
@@ -158,7 +166,7 @@ public class ChessGame {
         Map<ChessPosition, ChessPiece> pieces = teamPieces(teamColor);
         if(isInCheck(teamColor)){
             for(Map.Entry<ChessPosition, ChessPiece> entry: pieces.entrySet()){
-                if(validMoves(entry.getKey()) != null){
+                if(!validMoves(entry.getKey()).isEmpty()){
                     return false;
                 }
             }
@@ -178,7 +186,7 @@ public class ChessGame {
         Map<ChessPosition, ChessPiece> pieces = teamPieces(teamColor);
         if(!isInCheck(teamColor)){
                 for(Map.Entry<ChessPosition, ChessPiece> entry: pieces.entrySet()){
-                    if(validMoves(entry.getKey()) != null){
+                    if(!validMoves(entry.getKey()).isEmpty()){
                         return false;
                     }
                 }
@@ -193,8 +201,7 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        board.resetBoard();
-        teamColor = TeamColor.WHITE;
+        this.board = board;
     }
 
     /**
