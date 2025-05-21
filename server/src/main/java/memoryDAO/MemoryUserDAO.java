@@ -9,4 +9,8 @@ public class MemoryUserDAO {
     public void clear(){
         userDB.clear();
     }
+
+    public void add(UserData data){
+        userDB.put(data.getUsername(), data);
+    }
 }
