@@ -11,6 +11,9 @@ public class MemoryUserDAO {
     }
 
     public void add(UserData data){
+        if(userDB.containsKey(data.getUsername())){
+            throw new IllegalArgumentException("Error: user already taken");
+        }
         userDB.put(data.getUsername(), data);
     }
 }

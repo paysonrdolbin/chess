@@ -1,5 +1,6 @@
 package handler;
 
+import chess.InvalidMoveException;
 import model.UserData;
 import com.google.gson.Gson;
 import request.RegisterRequest;
@@ -8,6 +9,7 @@ import service.UserService;
 import spark.Route;
 import spark.Request;
 import spark.Response;
+import java.util.Map;
 
 
 public class RegisterHandler implements Route {
@@ -19,12 +21,17 @@ public class RegisterHandler implements Route {
     @Override
     public Object handle(Request req, Response res){
         UserData user = gson.fromJson(req.body(), UserData.class);
+        try{
+            UserService service = new UserService();
+            RegisterRequest registerRequest = new RegisterRequest(user.getUsername(), user.getPassword(), user.getEmail());
+            RegisterResponse servResponse = service.register(registerRequest);
+            res.status(200);
+            return gson.toJson(servResponse);
+        } catch (IllegalArgumentException e){
+            res.status(403);
+            return gson.toJson(Map.of("message",e.getMessage()));
+        }
 
-        UserService service = new UserService();
-        RegisterRequest registerRequest = new RegisterRequest(user.getUsername(), user.getPassword(), user.getEmail());
-        RegisterResponse servResponse = service.register(registerRequest);
-        res.status(200);
-        return gson.toJson(servResponse);
 
 
     }
