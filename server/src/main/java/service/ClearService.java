@@ -8,9 +8,9 @@ import request.ClearRequest;
 
 
 public class ClearService {
-    public ClearResponse clear(ClearRequest request){
+    public ClearResponse clearDB(ClearRequest request){
         GameDAO.clear();
-        UserDAO.clear():
+        UserDAO.clear();
         AuthDAO.clear();
         ClearResponse response = new ClearResponse();
         return response;
