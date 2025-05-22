@@ -5,6 +5,7 @@ import dataAccess.UserDAO;
 import model.AuthData;
 import model.UserData;
 import request.LoginRequest;
+import request.LogoutRequest;
 import request.RegisterRequest;
 import response.LoginResponse;
 import response.RegisterResponse;
@@ -29,5 +30,9 @@ public class UserService {
         }
     }
 
+    public void logout(LogoutRequest request){
+        String authToken = request.getAuthToken();
+        AuthDAO.delete(authToken);
+    }
 
 }

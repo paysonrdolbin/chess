@@ -15,4 +15,7 @@ public class AuthDAO {
         return data;
     }
 
+    public static void delete(String authToken){
+        authDB.delete(authToken);
+    }
 }

@@ -1,6 +1,5 @@
 package handler;
 
-import chess.InvalidMoveException;
 import model.UserData;
 import com.google.gson.Gson;
 import request.LoginRequest;
