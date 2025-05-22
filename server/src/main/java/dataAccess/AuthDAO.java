@@ -18,4 +18,12 @@ public class AuthDAO {
     public static void delete(String authToken){
         authDB.delete(authToken);
     }
+
+    public static void verify(String authToken){
+        authDB.verify(authToken);
+    }
+
+    public static String getUsername(String authToken){
+        return authDB.getUsername(authToken);
+    }
 }

@@ -18,10 +18,19 @@ public class MemoryAuthDAO {
     }
 
     public void delete(String authToken){
+        verify(authToken);
+        authDB.remove(authToken);
+    }
+
+    public void verify(String authToken){
         if(!authDB.containsKey(authToken)){
             throw new IllegalArgumentException("Error: unauthorized");
         }
-        authDB.remove(authToken);
+    }
+
+    public String getUsername(String authToken){
+        verify(authToken);
+        return authDB.get(authToken);
     }
 
     public static String generateToken() {

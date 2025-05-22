@@ -12,9 +12,9 @@ import java.util.Map;
 
 
 public class LoginHandler implements Route {
-    // default constructor
     private final Gson gson = new Gson();
 
+    // default constructor
     public LoginHandler() {
     }
     @Override

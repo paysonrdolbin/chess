@@ -9,4 +9,18 @@ public class MemoryGameDAO {
     public void clear(){
         games.clear();
     }
+
+    public void create(GameData data){
+        games.put(data.getGameID(), data);
+    }
+
+    public GameData get(int gameID){
+        if(games.containsKey(gameID)){
+            return games.get(gameID);
+
+        } else{
+            throw new IllegalArgumentException("Error: bad request");
+        }
+    }
+
 }
