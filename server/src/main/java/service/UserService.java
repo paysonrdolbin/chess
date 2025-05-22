@@ -4,7 +4,9 @@ import dataAccess.AuthDAO;
 import dataAccess.UserDAO;
 import model.AuthData;
 import model.UserData;
+import request.LoginRequest;
 import request.RegisterRequest;
+import response.LoginResponse;
 import response.RegisterResponse;
 
 public class UserService {
@@ -15,4 +17,17 @@ public class UserService {
         RegisterResponse response = new RegisterResponse(userAuthData);
         return response;
     }
+
+    public LoginResponse login(LoginRequest request){
+        UserData user = UserDAO.getUserData(request.getUsername());
+        if (request.getPassword().equals(user.getPassword())) {
+            AuthData authData = AuthDAO.add(user.getUsername());
+            LoginResponse response = new LoginResponse(authData);
+            return response;
+        } else {
+            throw new IllegalArgumentException("Wrong password");
+        }
+    }
+
+
 }

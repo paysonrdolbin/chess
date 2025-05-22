@@ -11,4 +11,8 @@ public class UserDAO {
     public static void add(UserData data){
         users.add(data);
     }
+
+    public static UserData getUserData(String username){
+        return users.get(username);
+    }
 }

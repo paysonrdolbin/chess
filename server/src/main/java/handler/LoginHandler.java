@@ -3,8 +3,8 @@ package handler;
 import chess.InvalidMoveException;
 import model.UserData;
 import com.google.gson.Gson;
-import request.RegisterRequest;
-import response.RegisterResponse;
+import request.LoginRequest;
+import response.LoginResponse;
 import service.UserService;
 import spark.Route;
 import spark.Request;
@@ -23,7 +23,7 @@ public class LoginHandler implements Route {
         UserData user = gson.fromJson(req.body(), UserData.class);
         try{
             UserService service = new UserService();
-            LoginRequest loginRequest = new RegisterRequest(user.getUsername(), user.getPassword(), user.getEmail());
+            LoginRequest loginRequest = new LoginRequest(user.getUsername(), user.getPassword());
             LoginResponse servResponse = service.login(loginRequest);
             res.status(200);
             return gson.toJson(servResponse);
