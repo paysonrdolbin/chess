@@ -6,6 +6,9 @@ public class CreateGameRequest {
 
     public CreateGameRequest(String authToken, String gameName) {
         this.authToken = authToken;
+        if(gameName == null){
+            throw new IllegalArgumentException("Error: bad request");
+        }
         this.gameName = gameName;
     }
 

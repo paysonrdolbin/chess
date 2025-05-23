@@ -7,9 +7,18 @@ public class JoinGameRequest {
     private final ChessGame.TeamColor color;
     private final int gameID;
 
-    public JoinGameRequest(String authToken, ChessGame.TeamColor color, int gameID) {
+    public JoinGameRequest(String authToken, String color, int gameID) {
         this.authToken = authToken;
-        this.color = color;
+        if(color == null){
+            throw new IllegalArgumentException("Error: bad request");
+        } else if(color.equals("WHITE")){
+            this.color = ChessGame.TeamColor.WHITE;
+        } else if(color.equals("BLACK")){
+            this.color = ChessGame.TeamColor.BLACK;
+        } else{
+            throw new IllegalArgumentException("Error: bad request");
+        }
+
         this.gameID = gameID;
     }
 

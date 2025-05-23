@@ -1,5 +1,8 @@
 package memoryDAO;
+import dataAccess.GameDAO;
 import model.GameData;
+
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -23,4 +26,15 @@ public class MemoryGameDAO {
         }
     }
 
+    public ArrayList<GameData> list(){
+        ArrayList<GameData> allGameData = new ArrayList<>();
+        for(Map.Entry<Integer, GameData> entry : games.entrySet()){
+            allGameData.add(entry.getValue());
+        }
+        return allGameData;
+    }
+
+    public void update(GameData data){
+        games.put(data.getGameID(), data);
+    }
 }

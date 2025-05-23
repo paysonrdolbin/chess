@@ -13,6 +13,17 @@ public class UserDAO {
     }
 
     public static UserData getUserData(String username){
-        return users.get(username);
+        UserData data = users.get(username);
+        if(data == null){
+            throw new IllegalArgumentException("Error: unauthorized");
+        }
+        return data;
     }
+
+//    public static void exist(String username){
+//        UserData data = users.get(username);
+//        if(data == null){
+//            throw new IllegalArgumentException("Error: unauthorized");
+//        }
+//    }
 }

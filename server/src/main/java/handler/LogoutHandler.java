@@ -2,6 +2,7 @@ package handler;
 
 import com.google.gson.Gson;
 import request.LogoutRequest;
+import service.ErrorService;
 import service.UserService;
 import spark.Request;
 import spark.Response;
@@ -26,7 +27,7 @@ public class LogoutHandler implements Route {
             res.status(200);
             return "{}";
         } catch (IllegalArgumentException e){
-            res.status(403);
+            res.status(ErrorService.errorCode(e.getMessage()));
             return gson.toJson(Map.of("message",e.getMessage()));
         }
     }

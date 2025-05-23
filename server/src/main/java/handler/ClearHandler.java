@@ -11,7 +11,7 @@ public class ClearHandler implements Route {
     public ClearHandler() {
     }
     @Override
-    public Object handle(Request req, Response res) throws Exception{
+    public Object handle(Request req, Response res) {
         ClearService service = new ClearService();
         ClearRequest clearRequest = new ClearRequest();
         service.clearDB(clearRequest);

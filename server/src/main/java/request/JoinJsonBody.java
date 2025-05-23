@@ -3,16 +3,16 @@ package request;
 import chess.ChessGame;
 
 public class JoinJsonBody {
-    private final ChessGame.TeamColor color;
+    private final String playerColor;
     private final int gameID;
 
-    public JoinJsonBody(ChessGame.TeamColor color, int gameID) {
-        this.color = color;
+    public JoinJsonBody(String color, int gameID) {
+        this.playerColor = color;
         this.gameID = gameID;
     }
 
-    public ChessGame.TeamColor getColor() {
-        return color;
+    public String getColor() {
+        return playerColor;
     }
 
     public int getGameID() {

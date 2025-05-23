@@ -12,6 +12,9 @@ import response.RegisterResponse;
 
 public class UserService {
     public RegisterResponse register(RegisterRequest request){
+        if(request.getUsername() == null || request.getPassword() == null || request.getEmail() == null){
+            throw new IllegalArgumentException("Error: bad request");
+        }
         UserData user = new UserData(request.getUsername(), request.getPassword(), request.getEmail());
         UserDAO.add(user);
         AuthData userAuthData = AuthDAO.add(user.getUsername());
@@ -20,13 +23,19 @@ public class UserService {
     }
 
     public LoginResponse login(LoginRequest request){
+        // if either field is empty, throw bad request
+        if(request.getUsername() == null || request.getPassword() == null){
+            throw new IllegalArgumentException("Error: bad request");
+        }
+//        UserDAO.exist(request.getUsername());
         UserData user = UserDAO.getUserData(request.getUsername());
         if (request.getPassword().equals(user.getPassword())) {
             AuthData authData = AuthDAO.add(user.getUsername());
             LoginResponse response = new LoginResponse(authData);
             return response;
-        } else {
-            throw new IllegalArgumentException("Wrong password");
+        }
+        else {
+            throw new IllegalArgumentException("Error: unauthorized");
         }
     }
 

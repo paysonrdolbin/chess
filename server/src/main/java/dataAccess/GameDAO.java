@@ -2,6 +2,8 @@ package dataAccess;
 import chess.ChessGame;
 import memoryDAO.MemoryGameDAO;
 import model.GameData;
+
+import java.util.ArrayList;
 import java.util.Random;
 
 public class GameDAO {
@@ -19,4 +21,11 @@ public class GameDAO {
         return gameDB.get(gameID);
     }
 
+    public static ArrayList<GameData> list(){
+        return gameDB.list();
+    }
+
+    public static void update(GameData data){
+        gameDB.update(data);
+    }
 }

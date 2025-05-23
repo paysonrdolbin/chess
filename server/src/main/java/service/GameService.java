@@ -4,10 +4,14 @@ import chess.ChessGame;
 import dataAccess.AuthDAO;
 import dataAccess.GameDAO;
 import model.GameData;
+import model.ListGameResponseBody;
 import request.CreateGameRequest;
 import request.JoinGameRequest;
+import request.ListGamesRequest;
 import response.CreateGameResponse;
+import response.ListGamesResponse;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class GameService {
@@ -23,20 +27,31 @@ public class GameService {
         AuthDAO.verify(request.getAuthToken());
         String username = AuthDAO.getUsername(request.getAuthToken());
         GameData data = GameDAO.get(request.getGameID());
+        GameData newData;
         if(request.getColor() == ChessGame.TeamColor.WHITE){
             if(data.getWhiteUsername() == null){
-                GameData newData = new GameData(data.getGameID(), username, data.getBlackUsername(), data.getGameName(), data.getGame());
+                newData = new GameData(data.getGameID(), username, data.getBlackUsername(), data.getGameName(), data.getGame());
             } else{
                 throw new IllegalArgumentException("Error: already taken");
             }
         } else {
             if(data.getBlackUsername() == null){
-                GameData newData = new GameData(data.getGameID(), data.getWhiteUsername(), username, data.getGameName(), data.getGame());
+                newData = new GameData(data.getGameID(), data.getWhiteUsername(), username, data.getGameName(), data.getGame());
             } else{
                 throw new IllegalArgumentException("Error: already taken");
             }
         }
+        GameDAO.update(newData);
     }
 
-
+    public ListGamesResponse list(ListGamesRequest request){
+        AuthDAO.verify(request.getAuthToken());
+        ArrayList<GameData> allGameData = GameDAO.list();
+        ArrayList<ListGameResponseBody> allGameDetails = new ArrayList<>();
+        for(GameData game: allGameData){
+            ListGameResponseBody gameDetails = new ListGameResponseBody(game.getGameID(), game.getWhiteUsername(), game.getBlackUsername(), game.getGameName(), game.getGame());
+            allGameDetails.add(gameDetails);
+        }
+        return new ListGamesResponse(allGameDetails);
+    }
 }

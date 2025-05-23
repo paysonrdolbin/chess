@@ -4,6 +4,7 @@ import model.UserData;
 import com.google.gson.Gson;
 import request.LoginRequest;
 import response.LoginResponse;
+import service.ErrorService;
 import service.UserService;
 import spark.Route;
 import spark.Request;
@@ -27,7 +28,7 @@ public class LoginHandler implements Route {
             res.status(200);
             return gson.toJson(servResponse);
         } catch (IllegalArgumentException e){
-            res.status(403);
+            res.status(ErrorService.errorCode(e.getMessage()));
             return gson.toJson(Map.of("message",e.getMessage()));
         }
 

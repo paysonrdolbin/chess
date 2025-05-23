@@ -13,7 +13,7 @@ public class MemoryUserDAO {
     public void add(UserData data){
         // if the username is already taken.
         if(userDB.containsKey(data.getUsername())){
-            throw new IllegalArgumentException("Error: user already taken");
+            throw new IllegalArgumentException("Error: already taken");
         }
         userDB.put(data.getUsername(), data);
     }
@@ -21,7 +21,7 @@ public class MemoryUserDAO {
     public UserData get(String username){
         // if the user isn't in the db.
         if(!userDB.containsKey(username)){
-            throw new IllegalArgumentException("User not found.");
+            return null;
         }
         return userDB.get(username);
     }

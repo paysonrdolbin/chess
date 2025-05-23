@@ -2,6 +2,7 @@ package handler;
 
 import request.CreateGameRequest;
 import response.CreateGameResponse;
+import service.ErrorService;
 import service.GameService;
 import spark.Request;
 import spark.Response;
@@ -28,7 +29,7 @@ public class CreateGameHandler implements Route {
             res.status(200);
             return gson.toJson(response);
         } catch(IllegalArgumentException e){
-            res.status(403);
+            res.status(ErrorService.errorCode(e.getMessage()));
             return gson.toJson(Map.of("message",e.getMessage()));
         }
 

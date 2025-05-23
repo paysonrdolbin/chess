@@ -3,6 +3,7 @@ package handler;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import request.JoinJsonBody;
+import service.ErrorService;
 import service.GameService;
 import spark.Request;
 import spark.Response;
@@ -24,14 +25,14 @@ public class JoinGameHandler implements Route {
         JoinJsonBody joinJson = gson.fromJson(req.body(), JoinJsonBody.class);
         String authToken = req.headers("authorization");
         try{
-            ChessGame.TeamColor color = joinJson.getColor();
+            String color = joinJson.getColor();
             int gameID = joinJson.getGameID();
             JoinGameRequest request = new JoinGameRequest(authToken, color, gameID);
             GameService service = new GameService();
             service.join(request);
             return "{}";
         } catch (IllegalArgumentException e) {
-            res.status(403);
+            res.status(ErrorService.errorCode(e.getMessage()));
             return gson.toJson(Map.of("message",e.getMessage()));
         }
 
