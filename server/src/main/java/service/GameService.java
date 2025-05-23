@@ -1,8 +1,8 @@
 package service;
 
 import chess.ChessGame;
-import dataAccess.AuthDAO;
-import dataAccess.GameDAO;
+import dataaccess.AuthDAO;
+import dataaccess.GameDAO;
 import model.GameData;
 import response.ListGameShortResponse;
 import request.CreateGameRequest;
@@ -49,7 +49,13 @@ public class GameService {
         ArrayList<GameData> allGameData = GameDAO.list();
         ArrayList<ListGameShortResponse> allGameDetails = new ArrayList<>();
         for(GameData game: allGameData){
-            ListGameShortResponse gameDetails = new ListGameShortResponse(game.getGameID(), game.getWhiteUsername(), game.getBlackUsername(), game.getGameName(), game.getGame());
+            ListGameShortResponse gameDetails =
+                    new ListGameShortResponse(
+                            game.getGameID(),
+                            game.getWhiteUsername(),
+                            game.getBlackUsername(),
+                            game.getGameName(),
+                            game.getGame());
             allGameDetails.add(gameDetails);
         }
         return new ListGamesResponse(allGameDetails);

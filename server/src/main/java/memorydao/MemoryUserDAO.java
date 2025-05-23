@@ -1,4 +1,4 @@
-package memoryDAO;
+package memorydao;
 import model.UserData;
 import java.util.Map;
 import java.util.HashMap;

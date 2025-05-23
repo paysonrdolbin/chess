@@ -1,31 +1,29 @@
-package dataAccess;
-import chess.ChessGame;
-import memoryDAO.MemoryGameDAO;
+package dataaccess;
+import memorydao.MemoryGameDAO;
 import model.GameData;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 public class GameDAO {
-    private final static MemoryGameDAO gameDB = new MemoryGameDAO();
+    private final static MemoryGameDAO GAME_DB = new MemoryGameDAO();
 
     public static void clear(){
-        gameDB.clear();
+        GAME_DB.clear();
     }
 
     public static void create(GameData gameData){
-        gameDB.create(gameData);
+        GAME_DB.create(gameData);
     }
 
     public static GameData get(int gameID){
-        return gameDB.get(gameID);
+        return GAME_DB.get(gameID);
     }
 
     public static ArrayList<GameData> list(){
-        return gameDB.list();
+        return GAME_DB.list();
     }
 
     public static void update(GameData data){
-        gameDB.update(data);
+        GAME_DB.update(data);
     }
 }

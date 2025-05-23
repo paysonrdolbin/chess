@@ -1,4 +1,4 @@
-package memoryDAO;
+package memorydao;
 import model.AuthData;
 
 import java.util.*;

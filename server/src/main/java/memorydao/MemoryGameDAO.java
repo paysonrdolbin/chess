@@ -1,5 +1,4 @@
-package memoryDAO;
-import dataAccess.GameDAO;
+package memorydao;
 import model.GameData;
 
 import java.util.ArrayList;

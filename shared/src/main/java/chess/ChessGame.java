@@ -179,14 +179,18 @@ public class ChessGame {
     public boolean isInCheckmate(TeamColor teamColor) {
         Map<ChessPosition, ChessPiece> pieces = teamPieces(teamColor);
         if(isInCheck(teamColor)){
-            for(Map.Entry<ChessPosition, ChessPiece> entry: pieces.entrySet()){
-                if(!validMoves(entry.getKey()).isEmpty()){
-                    return false;
-                }
-            }
-            return true;
+            return hasNoValidMoves(pieces);
         }
         return false;
+    }
+
+    public boolean hasNoValidMoves(Map<ChessPosition, ChessPiece> pieces){
+        for(Map.Entry<ChessPosition, ChessPiece> entry: pieces.entrySet()){
+            if(!validMoves(entry.getKey()).isEmpty()){
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -199,12 +203,7 @@ public class ChessGame {
     public boolean isInStalemate(TeamColor teamColor) {
         Map<ChessPosition, ChessPiece> pieces = teamPieces(teamColor);
         if(!isInCheck(teamColor)){
-                for(Map.Entry<ChessPosition, ChessPiece> entry: pieces.entrySet()){
-                    if(!validMoves(entry.getKey()).isEmpty()){
-                        return false;
-                    }
-                }
-            return true;
+            return hasNoValidMoves(pieces);
         }
         return false;
     }

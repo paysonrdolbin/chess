@@ -1,29 +1,29 @@
-package dataAccess;
+package dataaccess;
 
-import memoryDAO.MemoryAuthDAO;
+import memorydao.MemoryAuthDAO;
 import model.AuthData;
 
 public class AuthDAO {
-    private final static MemoryAuthDAO authDB = new MemoryAuthDAO();
+    private final static MemoryAuthDAO AUTH_DB = new MemoryAuthDAO();
 
     public static void clear() {
-        authDB.clear();
+        AUTH_DB.clear();
     }
 
     public static AuthData add(String username){
-        AuthData data = authDB.add(username);
+        AuthData data = AUTH_DB.add(username);
         return data;
     }
 
     public static void delete(String authToken){
-        authDB.delete(authToken);
+        AUTH_DB.delete(authToken);
     }
 
     public static void verify(String authToken){
-        authDB.verify(authToken);
+        AUTH_DB.verify(authToken);
     }
 
     public static String getUsername(String authToken){
-        return authDB.getUsername(authToken);
+        return AUTH_DB.getUsername(authToken);
     }
 }
