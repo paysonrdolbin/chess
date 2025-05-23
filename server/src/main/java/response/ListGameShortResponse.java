@@ -1,13 +1,13 @@
-package model;
+package response;
 import chess.ChessGame;
 
-public class ListGameResponseBody {
+public class ListGameShortResponse {
     private int gameID;
     private String whiteUsername;
     private String blackUsername;
     private String gameName;
 
-    public ListGameResponseBody(int gameID, String whiteUsername, String blackUsername, String gameName, ChessGame game) {
+    public ListGameShortResponse(int gameID, String whiteUsername, String blackUsername, String gameName, ChessGame game) {
         this.gameID = gameID;
         this.whiteUsername = whiteUsername;
         this.blackUsername = blackUsername;

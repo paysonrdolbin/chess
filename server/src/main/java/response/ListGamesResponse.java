@@ -1,13 +1,13 @@
 package response;
 
-import model.ListGameResponseBody;
+import response.ListGameShortResponse;
 
 import java.util.ArrayList;
 
 public class ListGamesResponse {
-    private final ArrayList<ListGameResponseBody> games;
+    private final ArrayList<ListGameShortResponse> games;
 
-    public ListGamesResponse(ArrayList<ListGameResponseBody> games) {
+    public ListGamesResponse(ArrayList<ListGameShortResponse> games) {
         this.games = games;
     }
 }
