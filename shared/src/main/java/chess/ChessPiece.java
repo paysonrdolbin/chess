@@ -101,12 +101,11 @@ public class ChessPiece {
                 if(row != pos.getRow() || col != pos.getColumn()){
                     ChessPosition newPos = new ChessPosition(row, col);
                     // makes sure the position is in bounds
-                    if (inBounds(newPos)){
+                    if (inBounds(newPos) && !colorCheck(this.getTeamColor(), newPos, board)){
                         // makes sure the piece at the new position isn't friendly
-                        if(!colorCheck(this.getTeamColor(), newPos, board)){
                             ChessMove move = new ChessMove(pos, newPos, null);
                             moves.add(move);
-                        }
+
                     }
                 }
             }
@@ -211,20 +210,11 @@ public class ChessPiece {
             }
             // diagonal kill
             for(int i : diagonals){
-                ChessPosition diagonal = new ChessPosition(pos.getRow()-1, pos.getColumn()+i);
-                if(inBounds(diagonal) && board.getPiece(diagonal) != null && board.getPiece(diagonal).getTeamColor() != ChessGame.TeamColor.BLACK){
-                    if(diagonal.getRow() == 1){
-                        for(PieceType type: promotions){
-                            ChessMove killMove = new ChessMove(pos, diagonal, type);
-                            moves.add(killMove);
-                        }
-                    } else{
-                        ChessMove killMove = new ChessMove(pos, diagonal, null);
-                        moves.add(killMove);
-                    }
-                }
+                diagonalKillBlack(pos, board, promotions, moves, i);
             }
         }
+
+
 
         // White pawn's potential moves
         if(this.getTeamColor() == ChessGame.TeamColor.WHITE){
@@ -252,21 +242,40 @@ public class ChessPiece {
             }
             // diagonal kill
             for(int i : diagonals){
-                ChessPosition diagonal = new ChessPosition(pos.getRow()+1, pos.getColumn()+i);
-                if(inBounds(diagonal) && board.getPiece(diagonal) != null && board.getPiece(diagonal).getTeamColor() != ChessGame.TeamColor.WHITE){
-                    if(diagonal.getRow() == 8){
-                        for(PieceType type: promotions){
-                            ChessMove killMove = new ChessMove(pos, diagonal, type);
-                            moves.add(killMove);
-                        }
-                    } else{
-                        ChessMove killMove = new ChessMove(pos, diagonal, null);
-                        moves.add(killMove);
-                    }
-                }
+                diagonalKillWhite(pos, board, promotions, moves, i);
             }
         }
         return moves;
+    }
+
+    public void diagonalKillBlack(ChessPosition pos, ChessBoard board, ChessPiece.PieceType[] promotions, Collection<ChessMove> moves, int i){
+        ChessPosition diagonal = new ChessPosition(pos.getRow()-1, pos.getColumn()+i);
+        if(inBounds(diagonal) && board.getPiece(diagonal) != null && board.getPiece(diagonal).getTeamColor() != ChessGame.TeamColor.BLACK){
+            if(diagonal.getRow() == 1){
+                for(PieceType type: promotions){
+                    ChessMove killMove = new ChessMove(pos, diagonal, type);
+                    moves.add(killMove);
+                }
+            } else{
+                ChessMove killMove = new ChessMove(pos, diagonal, null);
+                moves.add(killMove);
+            }
+        }
+    }
+
+    public void diagonalKillWhite(ChessPosition pos, ChessBoard board, ChessPiece.PieceType[] promotions, Collection<ChessMove> moves, int i){
+        ChessPosition diagonal = new ChessPosition(pos.getRow()+1, pos.getColumn()+i);
+        if(inBounds(diagonal) && board.getPiece(diagonal) != null && board.getPiece(diagonal).getTeamColor() != ChessGame.TeamColor.WHITE){
+            if(diagonal.getRow() == 8){
+                for(PieceType type: promotions){
+                    ChessMove killMove = new ChessMove(pos, diagonal, type);
+                    moves.add(killMove);
+                }
+            } else{
+                ChessMove killMove = new ChessMove(pos, diagonal, null);
+                moves.add(killMove);
+            }
+        }
     }
 
     // helper function to do diagonal checking much quicker

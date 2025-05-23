@@ -146,27 +146,28 @@ public class ChessGame {
         // makes maps for the player's team's pieces, and the opponent's team's pieces
         Map<ChessPosition, ChessPiece> team = teamPieces(teamColor);
         Map<ChessPosition, ChessPiece> oppPieces = teamPieces(oppColor);
-        ChessPosition posKing;
+        ChessPosition posKing = null;
 
-        // searches for the king and get's its location
+        // searches for the king and gets its location
         for (Map.Entry<ChessPosition, ChessPiece> entry : team.entrySet()) {
-            if(entry.getValue().getPieceType() == ChessPiece.PieceType.KING){
+            if (entry.getValue().getPieceType() == ChessPiece.PieceType.KING) {
                 posKing = entry.getKey();
-
-                // searches through each of the opponent's pieces
-                for (Map.Entry<ChessPosition, ChessPiece> entry1: oppPieces.entrySet()){
-                    Collection<ChessMove> moves = entry1.getValue().pieceMoves(board, entry1.getKey());
-
-                    // checks each of their moves for potential check causing moves
-                    for(ChessMove move: moves){
-                        if(move.getEndPosition().equals(posKing)){
-                            return true;
-                        }
-                    }
-                }
                 break;
             }
         }
+
+        // searches through each of the opponent's pieces
+        for (Map.Entry<ChessPosition, ChessPiece> entry1: oppPieces.entrySet()){
+            Collection<ChessMove> moves = entry1.getValue().pieceMoves(board, entry1.getKey());
+
+            // checks each of their moves for potential check causing moves
+            for(ChessMove move: moves){
+                if(move.getEndPosition().equals(posKing)){
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 
