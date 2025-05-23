@@ -10,4 +10,8 @@ public class ListGamesResponse {
     public ListGamesResponse(ArrayList<ListGameShortResponse> games) {
         this.games = games;
     }
+
+    public ArrayList<ListGameShortResponse> getGames() {
+        return games;
+    }
 }

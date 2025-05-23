@@ -10,6 +10,10 @@ public class MemoryAuthDAO {
         authDB.clear();
     }
 
+    public int size(){
+        return authDB.size();
+    }
+
     public AuthData add(String username){
         String token = generateToken();
         AuthData auth = new AuthData(username, token);
