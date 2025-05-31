@@ -1,4 +1,99 @@
 package sqlDAO;
 
+import dataaccess.DataAccessException;
+import dataaccess.DatabaseManager;
+import memorydao.MemoryAuthDAO;
+import java.sql.*;
+
+
 public class SQLAuthDAO {
+
+    @Override
+    public void add(String username) throws DataAccessException {
+        String authToken = MemoryAuthDAO.generateToken();
+        String sqlRequest = "INSERT INTO Auths (authToken, username) VALUES (?, ?)";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sqlRequest)) {
+            statement.setString(1, authToken);
+            statement.setString(2, username);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("Unable to add user", e);
+        }
+    }
+
+    @Override
+    public String getUsername(String authToken) throws DataAccessException {
+        String sqlRequest = "SELECT * FROM Users WHERE authToken = ?";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sqlRequest)) {
+            statement.setString(1, authToken);
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("username");
+                }
+            }
+            return null;
+        } catch (SQLException e) {
+            throw new DataAccessException("Unable to find user", e);
+        }
+    }
+
+    @Override
+    public void clear() throws DataAccessException {
+        String sqlRequest = "DELETE FROM Auths";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sqlRequest)) {
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("Unable to clear auth db", e);
+        }
+    }
+
+    @Override
+    public int size() throws DataAccessException {
+        String sqlRequest = "SELECT COUNT(*) FROM Auths";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sqlRequest);
+            ResultSet rs = statement.executeQuery()) {
+            if(rs.next()){
+                return rs.getInt(1);
+            }
+            return 0;
+        } catch (SQLException e) {
+             throw new DataAccessException("Unable to return auth db size");
+        }
+    }
+
+    @Override
+    public void delete(String authToken) throws DataAccessException {
+        String sqlRequest = "DELETE FROM Auths WHERE authToken = ?";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sqlRequest)){
+            statement.setString(1, authToken);
+            statement.executeUpdate();
+        } catch (SQLException e){
+            throw new IllegalArgumentException("Unable to delete authToken");
+        }
+    }
+
+    @Override
+    public boolean verify(String authToken) throws DataAccessException{
+        String sqlRequest = "SELECT FROM Auths WHERE authToken = ?";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sqlRequest)){
+            statement.setString(1, authToken);
+            try (ResultSet rs = statement.executeQuery()){
+                if(rs.next()){
+                    return true;
+                } else{
+                    return false;
+                }
+            }
+        } catch (SQLException e){
+            throw new DataAccessException("Unable to verify authToken");
+        }
+    }
+
 }
+
