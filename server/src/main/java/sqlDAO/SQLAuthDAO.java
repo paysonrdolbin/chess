@@ -56,7 +56,7 @@ public class SQLAuthDAO {
             }
             return 0;
         } catch (SQLException e) {
-             throw new DataAccessException("Unable to return auth db size");
+             throw new DataAccessException("Unable to return auth db size", e);
         }
     }
 
@@ -67,7 +67,7 @@ public class SQLAuthDAO {
             statement.setString(1, authToken);
             statement.executeUpdate();
         } catch (SQLException e){
-            throw new IllegalArgumentException("Unable to delete authToken");
+            throw new IllegalArgumentException("Unable to delete authToken", e);
         }
     }
 
@@ -84,7 +84,7 @@ public class SQLAuthDAO {
                 }
             }
         } catch (SQLException e){
-            throw new DataAccessException("Unable to verify authToken");
+            throw new DataAccessException("Unable to verify authToken", e);
         }
     }
 
