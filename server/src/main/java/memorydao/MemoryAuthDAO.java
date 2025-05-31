@@ -37,7 +37,4 @@ public class MemoryAuthDAO {
         return authDB.get(authToken);
     }
 
-    public static String generateToken() {
-        return UUID.randomUUID().toString();
-    }
 }

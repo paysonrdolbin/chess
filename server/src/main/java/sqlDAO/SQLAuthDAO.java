@@ -9,8 +9,7 @@ import java.sql.*;
 public class SQLAuthDAO {
 
     @Override
-    public void add(String username) throws DataAccessException {
-        String authToken = MemoryAuthDAO.generateToken();
+    public void add(String username, String authToken) throws DataAccessException {
         String sqlRequest = "INSERT INTO Auths (authToken, username) VALUES (?, ?)";
         try (Connection connection = DatabaseManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(sqlRequest)) {
