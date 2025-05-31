@@ -1,5 +1,6 @@
 package dataaccess;
 
+import javax.xml.crypto.Data;
 import java.sql.*;
 import java.util.Properties;
 
@@ -24,9 +25,42 @@ public class DatabaseManager {
         try (var conn = DriverManager.getConnection(connectionUrl, dbUsername, dbPassword);
              var preparedStatement = conn.prepareStatement(statement)) {
             preparedStatement.executeUpdate();
-        } catch (SQLException ex) {
-            throw new DataAccessException("failed to create database", ex);
+        } catch (SQLException e) {
+            throw new DataAccessException("failed to create database", e);
         }
+    }
+
+    public static void createTables() throws DataAccessException {
+        try (Connection connection = getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.execute("""
+                CREATE TABLE IF NOT EXISTS Users (
+                    username VARCHAR(255) PRIMARY KEY,
+                    password VARCHAR(255) NOT NULL,
+                    email VARCHAR(255)
+                );
+                """);
+
+            statement.execute("""
+                CREATE TABLE IF NOT EXISTS Auths (
+                    authToken VARCHAR(255) PRIMARY KEY,
+                    username VARCHAR(255) NOT NULL
+                );    
+            """);
+
+            statement.execute("""
+                CREATE TABLE IF NOT EXISTS Games (
+                    gameID INT PRIMARY KEY,
+                    whiteUsername VARCHAR(255),
+                    blackUsername VARCHAR(255),
+                    gameName VARCHAR(255),
+                    game TEXT
+                );
+            """);
+        } catch (SQLException e){
+            throw new DataAccessException("failed to create database", e);
+        }
+
     }
 
     /**
