@@ -7,7 +7,7 @@ import model.UserData;
 import java.sql.*;
 
 
-public class SQLUserDAO implements UserDAO {
+public class SQLUserDAO {
 
     @Override
     public void add(UserData user) throws DataAccessException {
@@ -40,6 +40,17 @@ public class SQLUserDAO implements UserDAO {
             return null;
         } catch (SQLException e) {
             throw new DataAccessException("Unable to find user", e);
+        }
+    }
+
+    @Override
+    public void clear() throws DataAccessException {
+        String sqlRequest = "DELETE FROM Users";
+        try (Connection connection = DatabaseManager.getConnection();
+            PreparedStatement statement = connection.prepareStatement(sqlRequest)) {
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("Unable to clear user db", e);
         }
     }
 
