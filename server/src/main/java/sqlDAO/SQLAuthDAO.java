@@ -8,7 +8,6 @@ import java.sql.*;
 
 public class SQLAuthDAO {
 
-    @Override
     public void add(String username, String authToken) throws DataAccessException {
         String sqlRequest = "INSERT INTO Auths (authToken, username) VALUES (?, ?)";
         try (Connection connection = DatabaseManager.getConnection();
@@ -21,7 +20,6 @@ public class SQLAuthDAO {
         }
     }
 
-    @Override
     public String getUsername(String authToken) throws DataAccessException {
         String sqlRequest = "SELECT * FROM Users WHERE authToken = ?";
         try (Connection connection = DatabaseManager.getConnection();
@@ -38,7 +36,6 @@ public class SQLAuthDAO {
         }
     }
 
-    @Override
     public void clear() throws DataAccessException {
         String sqlRequest = "DELETE FROM Auths";
         try (Connection connection = DatabaseManager.getConnection();
@@ -49,7 +46,6 @@ public class SQLAuthDAO {
         }
     }
 
-    @Override
     public int size() throws DataAccessException {
         String sqlRequest = "SELECT COUNT(*) FROM Auths";
         try (Connection connection = DatabaseManager.getConnection();
@@ -64,7 +60,6 @@ public class SQLAuthDAO {
         }
     }
 
-    @Override
     public void delete(String authToken) throws DataAccessException {
         String sqlRequest = "DELETE FROM Auths WHERE authToken = ?";
         try (Connection connection = DatabaseManager.getConnection();
@@ -76,7 +71,6 @@ public class SQLAuthDAO {
         }
     }
 
-    @Override
     public boolean verify(String authToken) throws DataAccessException{
         String sqlRequest = "SELECT FROM Auths WHERE authToken = ?";
         try (Connection connection = DatabaseManager.getConnection();

@@ -9,7 +9,6 @@ import java.sql.*;
 
 public class SQLUserDAO {
 
-    @Override
     public void add(UserData user) throws DataAccessException {
         String sqlRequest = "INSERT INTO Users (username, password, email) VALUES (?, ?, ?)";
         try (Connection connection = DatabaseManager.getConnection();
@@ -23,7 +22,6 @@ public class SQLUserDAO {
         }
     }
 
-    @Override
     public UserData get(String username) throws DataAccessException {
         String sqlRequest = "SELECT * FROM Users WHERE username = ?";
         try (Connection connection = DatabaseManager.getConnection();
@@ -43,7 +41,6 @@ public class SQLUserDAO {
         }
     }
 
-    @Override
     public void clear() throws DataAccessException {
         String sqlRequest = "DELETE FROM Users";
         try (Connection connection = DatabaseManager.getConnection();
