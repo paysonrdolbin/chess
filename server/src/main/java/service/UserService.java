@@ -4,6 +4,7 @@ import dataaccess.AuthDAO;
 import dataaccess.UserDAO;
 import model.AuthData;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 import request.LoginRequest;
 import request.LogoutRequest;
 import request.RegisterRequest;
@@ -15,7 +16,9 @@ public class UserService {
         if(request.getUsername() == null || request.getPassword() == null || request.getEmail() == null){
             throw new IllegalArgumentException("Error: bad request");
         }
-        UserData user = new UserData(request.getUsername(), request.getPassword(), request.getEmail());
+        String hashedPassword = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
+
+        UserData user = new UserData(request.getUsername(), hashedPassword, request.getEmail());
         UserDAO.add(user);
         AuthData userAuthData = AuthDAO.add(user.getUsername());
         RegisterResponse response = new RegisterResponse(userAuthData);
@@ -29,7 +32,7 @@ public class UserService {
         }
 //        UserDAO.exist(request.getUsername());
         UserData user = UserDAO.getUserData(request.getUsername());
-        if (request.getPassword().equals(user.getPassword())) {
+        if (BCrypt.checkpw(request.getPassword(), user.getPassword())) {
             AuthData authData = AuthDAO.add(user.getUsername());
             LoginResponse response = new LoginResponse(authData);
             return response;
@@ -43,5 +46,8 @@ public class UserService {
         String authToken = request.getAuthToken();
         AuthDAO.delete(authToken);
     }
+
+
+
 
 }
