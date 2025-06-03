@@ -14,10 +14,9 @@ public class MemoryAuthDAO {
         return authDB.size();
     }
 
-    public AuthData add(String username){
-        String token = generateToken();
-        AuthData auth = new AuthData(username, token);
-        authDB.put(token, username);
+    public AuthData add(String username, String authToken){
+        AuthData auth = new AuthData(username, authToken);
+        authDB.put(authToken, username);
         return auth;
     }
 

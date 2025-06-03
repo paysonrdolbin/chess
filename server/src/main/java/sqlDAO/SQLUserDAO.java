@@ -9,6 +9,10 @@ import java.sql.*;
 
 public class SQLUserDAO {
 
+    public SQLUserDAO() throws DataAccessException {
+        configureDatabase();
+    }
+
     public void add(UserData user) throws DataAccessException {
         String sqlRequest = "INSERT INTO Users (username, password, email) VALUES (?, ?, ?)";
         try (Connection connection = DatabaseManager.getConnection();
@@ -18,7 +22,10 @@ public class SQLUserDAO {
             statement.setString(3, user.getEmail());
             statement.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("Unable to add user", e);
+            if (e.getSQLState().startsWith("23")){
+                throw new IllegalArgumentException("Error: already taken", e);
+            }
+            throw new DataAccessException("Error: unable to add user", e);
         }
     }
 
@@ -37,7 +44,7 @@ public class SQLUserDAO {
             }
             return null;
         } catch (SQLException e) {
-            throw new DataAccessException("Unable to find user", e);
+            throw new DataAccessException("Error: database error in finding user", e);
         }
     }
 
@@ -47,7 +54,30 @@ public class SQLUserDAO {
             PreparedStatement statement = connection.prepareStatement(sqlRequest)) {
             statement.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("Unable to clear user db", e);
+            throw new DataAccessException("Error: unable to clear user db", e);
+        }
+    }
+
+    private final String[] createStatements = {
+            """
+            CREATE TABLE IF NOT EXISTS Users (
+            username VARCHAR(255) PRIMARY KEY,
+            password VARCHAR(255) NOT NULL,
+            email VARCHAR(255)
+            );
+            """
+    };
+
+    public void configureDatabase() throws DataAccessException{
+        DatabaseManager.createDatabase();
+        try(Connection connection = DatabaseManager.getConnection()){
+            for(var statement : createStatements) {
+                try (var preparedStatement = connection.prepareStatement(statement)) {
+                    preparedStatement.executeUpdate();
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error: Unable to connect to database", e);
         }
     }
 

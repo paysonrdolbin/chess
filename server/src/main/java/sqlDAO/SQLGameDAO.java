@@ -12,13 +12,17 @@ import java.util.ArrayList;
 public class SQLGameDAO{
     private final Gson gson = new Gson();
 
+    public SQLGameDAO() throws DataAccessException {
+        configureDatabase();
+    }
+
     public void clear() throws DataAccessException {
         String sqlRequest = "DELETE FROM Games";
         try(Connection connection = DatabaseManager.getConnection();
             PreparedStatement statement = connection.prepareStatement(sqlRequest)){
             statement.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("Unable to clear games from db", e);
+            throw new DataAccessException("Error: Unable to clear games from db", e);
         }
     }
 
@@ -32,9 +36,9 @@ public class SQLGameDAO{
             statement.setString(3, data.getBlackUsername());
             statement.setString(4, data.getGameName());
             statement.setString(5, gameJson);
-
+            statement.executeUpdate();
         } catch (SQLException e){
-            throw new DataAccessException("Unable to create game", e);
+            throw new DataAccessException("Error: Unable to create game", e);
         }
     }
 
@@ -54,11 +58,11 @@ public class SQLGameDAO{
                         game
                             );
                 }
-                throw new DataAccessException("Game not found");
+                throw new IllegalArgumentException("Error: bad request");
             }
 
         } catch(SQLException e){
-            throw new DataAccessException("Unable to retrieve game", e);
+            throw new DataAccessException("Error: Unable to retrieve game", e);
         }
     }
 
@@ -81,7 +85,7 @@ public class SQLGameDAO{
             }
             return gameList;
         } catch (SQLException e){
-            throw new DataAccessException("Unable to list games", e);
+            throw new DataAccessException("Error: Unable to list games", e);
         }
     }
 
@@ -96,10 +100,34 @@ public class SQLGameDAO{
             statement.setString(3, data.getGameName());
             statement.setString(4, gameJson);
             if(statement.executeUpdate() == 0){
-                throw new DataAccessException("No game found under this ID");
+                throw new DataAccessException("Error: No game found under this ID");
             }
         } catch (SQLException e){
-            throw new DataAccessException("Unable to update a game", e);
+            throw new DataAccessException("Error: Unable to update a game", e);
+        }
+    }
+
+    private final String[] createStatements = {
+            """
+            CREATE TABLE IF NOT EXISTS Games (
+            gameID INT PRIMARY KEY,
+            whiteUsername VARCHAR(255),
+            blackUsername VARCHAR(255),
+            gameName VARCHAR(255),
+            game TEXT
+            );"""
+    };
+
+    public void configureDatabase() throws DataAccessException{
+        DatabaseManager.createDatabase();
+        try(Connection connection = DatabaseManager.getConnection()){
+            for(var statement : createStatements) {
+                try (var preparedStatement = connection.prepareStatement(statement)) {
+                    preparedStatement.executeUpdate();
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error: Unable to connect to database", e);
         }
     }
 

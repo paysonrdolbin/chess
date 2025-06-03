@@ -8,6 +8,10 @@ import java.sql.*;
 
 public class SQLAuthDAO {
 
+    public SQLAuthDAO() throws DataAccessException{
+        configureDatabase();
+    }
+
     public void add(String username, String authToken) throws DataAccessException {
         String sqlRequest = "INSERT INTO Auths (authToken, username) VALUES (?, ?)";
         try (Connection connection = DatabaseManager.getConnection();
@@ -16,12 +20,12 @@ public class SQLAuthDAO {
             statement.setString(2, username);
             statement.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("Unable to add user", e);
+            throw new DataAccessException("Error: unable to add user", e);
         }
     }
 
     public String getUsername(String authToken) throws DataAccessException {
-        String sqlRequest = "SELECT * FROM Users WHERE authToken = ?";
+        String sqlRequest = "SELECT * FROM Auths WHERE authToken = ?";
         try (Connection connection = DatabaseManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(sqlRequest)) {
             statement.setString(1, authToken);
@@ -32,7 +36,7 @@ public class SQLAuthDAO {
             }
             return null;
         } catch (SQLException e) {
-            throw new DataAccessException("Unable to find user", e);
+            throw new DataAccessException("Error: unable to find user", e);
         }
     }
 
@@ -42,7 +46,7 @@ public class SQLAuthDAO {
              PreparedStatement statement = connection.prepareStatement(sqlRequest)) {
             statement.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("Unable to clear auth db", e);
+            throw new DataAccessException("Error: unable to clear auth db", e);
         }
     }
 
@@ -56,35 +60,56 @@ public class SQLAuthDAO {
             }
             return 0;
         } catch (SQLException e) {
-             throw new DataAccessException("Unable to return auth db size", e);
+             throw new DataAccessException("Error: Unable to return auth size", e);
         }
     }
 
     public void delete(String authToken) throws DataAccessException {
+        verify(authToken);
         String sqlRequest = "DELETE FROM Auths WHERE authToken = ?";
         try (Connection connection = DatabaseManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(sqlRequest)){
             statement.setString(1, authToken);
             statement.executeUpdate();
         } catch (SQLException e){
-            throw new IllegalArgumentException("Unable to delete authToken", e);
+            throw new IllegalArgumentException("Error: unable to delete authToken", e);
         }
     }
 
-    public boolean verify(String authToken) throws DataAccessException{
-        String sqlRequest = "SELECT FROM Auths WHERE authToken = ?";
+    public void verify(String authToken) throws DataAccessException{
+        String sqlRequest = "SELECT * FROM Auths WHERE authToken = ?";
         try (Connection connection = DatabaseManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(sqlRequest)){
             statement.setString(1, authToken);
             try (ResultSet rs = statement.executeQuery()){
-                if(rs.next()){
-                    return true;
-                } else{
-                    return false;
+                if(!rs.next()){
+                    throw new IllegalArgumentException("Error: unauthorized");
                 }
             }
         } catch (SQLException e){
-            throw new DataAccessException("Unable to verify authToken", e);
+            throw new DataAccessException("Error: unable to verify auth token", e);
+        }
+    }
+
+    private final String[] createStatements = {
+            """
+            CREATE TABLE IF NOT EXISTS Auths (
+            authToken VARCHAR(255) PRIMARY KEY,
+            username VARCHAR(255) NOT NULL
+            ); 
+            """
+    };
+
+    public void configureDatabase() throws DataAccessException{
+        DatabaseManager.createDatabase();
+        try(Connection connection = DatabaseManager.getConnection()){
+            for(var statement : createStatements) {
+                try (var preparedStatement = connection.prepareStatement(statement)) {
+                    preparedStatement.executeUpdate();
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error: unable to configure database", e);
         }
     }
 
