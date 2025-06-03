@@ -9,7 +9,8 @@ import java.sql.*;
 public class SQLAuthDAO {
 
     public SQLAuthDAO() throws DataAccessException{
-        configureDatabase();
+        SQLUserDAO userSQL = new SQLUserDAO();
+        userSQL.configureDatabase();
     }
 
     public void add(String username, String authToken) throws DataAccessException {
@@ -86,18 +87,6 @@ public class SQLAuthDAO {
             """
     };
 
-    public void configureDatabase() throws DataAccessException{
-        DatabaseManager.createDatabase();
-        try(Connection connection = DatabaseManager.getConnection()){
-            for(var statement : createStatements) {
-                try (var preparedStatement = connection.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException("Error: unable to configure database", e);
-        }
-    }
 
 }
 

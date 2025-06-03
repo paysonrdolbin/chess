@@ -13,7 +13,8 @@ public class SQLGameDAO{
     private final Gson gson = new Gson();
 
     public SQLGameDAO() throws DataAccessException {
-        configureDatabase();
+        SQLUserDAO userSQL = new SQLUserDAO();
+        userSQL.configureDatabase();
     }
 
     public void clear() throws DataAccessException {
@@ -118,17 +119,5 @@ public class SQLGameDAO{
             );"""
     };
 
-    public void configureDatabase() throws DataAccessException{
-        DatabaseManager.createDatabase();
-        try(Connection connection = DatabaseManager.getConnection()){
-            for(var statement : createStatements) {
-                try (var preparedStatement = connection.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException("Error: Unable to connect to database", e);
-        }
-    }
 
 }
