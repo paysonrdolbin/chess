@@ -69,7 +69,7 @@ public class SQLGameDAO{
 
     public ArrayList<GameData> list() throws DataAccessException{
         ArrayList<GameData> gameList = new ArrayList<>();
-        String sqlRequest = "SELECT * FROM GAMES";
+        String sqlRequest = "SELECT * FROM Games";
         try(Connection connection = DatabaseManager.getConnection();
         PreparedStatement statement = connection.prepareStatement(sqlRequest);
         ResultSet rs = statement.executeQuery()){
