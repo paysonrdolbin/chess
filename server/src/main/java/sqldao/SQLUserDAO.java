@@ -1,8 +1,7 @@
-package sqlDAO;
+package sqldao;
 
 import dataaccess.DataAccessException;
 import dataaccess.DatabaseManager;
-import dataaccess.UserDAO;
 import model.UserData;
 import java.sql.*;
 

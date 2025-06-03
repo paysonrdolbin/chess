@@ -1,4 +1,4 @@
-package sqlDAO;
+package sqldao;
 
 import chess.ChessGame;
 import com.google.gson.Gson;

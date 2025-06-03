@@ -1,8 +1,8 @@
-package sqlDAO;
+package sqldao;
 
 import dataaccess.DataAccessException;
 import dataaccess.DatabaseManager;
-import memorydao.MemoryAuthDAO;
+
 import java.sql.*;
 
 
