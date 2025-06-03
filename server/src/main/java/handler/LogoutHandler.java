@@ -1,6 +1,7 @@
 package handler;
 
 import com.google.gson.Gson;
+import dataaccess.DataAccessException;
 import request.LogoutRequest;
 import service.ErrorService;
 import service.UserService;
@@ -28,6 +29,9 @@ public class LogoutHandler implements Route {
             return "{}";
         } catch (IllegalArgumentException e){
             res.status(ErrorService.errorCode(e.getMessage()));
+            return gson.toJson(Map.of("message",e.getMessage()));
+        } catch (DataAccessException e){
+            res.status(500);
             return gson.toJson(Map.of("message",e.getMessage()));
         }
     }

@@ -1,5 +1,6 @@
 package handler;
 
+import dataaccess.DataAccessException;
 import request.CreateGameRequest;
 import response.CreateGameResponse;
 import service.ErrorService;
@@ -10,6 +11,7 @@ import spark.Route;
 import com.google.gson.Gson;
 import request.CreateJsonBody;
 
+import javax.xml.crypto.Data;
 import java.util.Map;
 
 public class CreateGameHandler implements Route {
@@ -30,6 +32,9 @@ public class CreateGameHandler implements Route {
             return gson.toJson(response);
         } catch(IllegalArgumentException e){
             res.status(ErrorService.errorCode(e.getMessage()));
+            return gson.toJson(Map.of("message",e.getMessage()));
+        } catch(DataAccessException e){
+            res.status(500);
             return gson.toJson(Map.of("message",e.getMessage()));
         }
 

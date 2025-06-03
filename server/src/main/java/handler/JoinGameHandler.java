@@ -2,6 +2,7 @@ package handler;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
+import dataaccess.DataAccessException;
 import request.JoinJsonBody;
 import service.ErrorService;
 import service.GameService;
@@ -34,6 +35,9 @@ public class JoinGameHandler implements Route {
         } catch (IllegalArgumentException e) {
             res.status(ErrorService.errorCode(e.getMessage()));
             return gson.toJson(Map.of("message",e.getMessage()));
+        } catch (DataAccessException e){
+            res.status(500);
+            return gson.toJson(Map.of("message", e.getMessage()));
         }
 
     }

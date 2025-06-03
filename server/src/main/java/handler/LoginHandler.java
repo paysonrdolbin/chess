@@ -1,5 +1,6 @@
 package handler;
 
+import dataaccess.DataAccessException;
 import model.UserData;
 import com.google.gson.Gson;
 import request.LoginRequest;
@@ -9,6 +10,8 @@ import service.UserService;
 import spark.Route;
 import spark.Request;
 import spark.Response;
+
+import javax.xml.crypto.Data;
 import java.util.Map;
 
 
@@ -29,6 +32,9 @@ public class LoginHandler implements Route {
             return gson.toJson(servResponse);
         } catch (IllegalArgumentException e){
             res.status(ErrorService.errorCode(e.getMessage()));
+            return gson.toJson(Map.of("message",e.getMessage()));
+        } catch (DataAccessException e){
+            res.status(500);
             return gson.toJson(Map.of("message",e.getMessage()));
         }
 

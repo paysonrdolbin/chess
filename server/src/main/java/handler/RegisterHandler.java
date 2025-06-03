@@ -1,6 +1,7 @@
 package handler;
 
 import chess.InvalidMoveException;
+import dataaccess.DataAccessException;
 import model.UserData;
 import com.google.gson.Gson;
 import request.RegisterRequest;
@@ -30,6 +31,9 @@ public class RegisterHandler implements Route {
             return gson.toJson(servResponse);
         } catch (IllegalArgumentException e){
             res.status(ErrorService.errorCode(e.getMessage()));
+            return gson.toJson(Map.of("message",e.getMessage()));
+        } catch (DataAccessException e){
+            res.status(500);
             return gson.toJson(Map.of("message",e.getMessage()));
         }
 
