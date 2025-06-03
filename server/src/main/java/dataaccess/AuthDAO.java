@@ -3,57 +3,47 @@ package dataaccess;
 import memorydao.MemoryAuthDAO;
 import model.AuthData;
 import sqlDAO.SQLAuthDAO;
+import sqlDAO.SQLUserDAO;
 
 import java.util.UUID;
 
 public class AuthDAO {
-    private final static SQLAuthDAO AUTH_DB = new SQLAuthDAO();
+    private final static SQLAuthDAO AUTH_DB;
 
-    public static void clear() {
-        try{
-            AUTH_DB.clear();
-        } catch (DataAccessException e) {
-            throw new IllegalArgumentException("Error: Database failed to clear");
+    static {
+        try {
+            AUTH_DB = new SQLAuthDAO();
+        } catch (DataAccessException e){
+            throw new IllegalArgumentException("Error: Failed to initialize USER_DB", e);
         }
     }
-
-    public static AuthData add(String username){
-        try{
-            String authToken = generateToken();
-            AUTH_DB.add(username, authToken);
-            AuthData data = new AuthData(username, authToken);
-            return data;
-        } catch (DataAccessException e) {
-            throw new IllegalArgumentException("Error: Database failed to add");
-        }
+    public static void clear() throws DataAccessException {
+        AUTH_DB.clear();
     }
 
-    public static void delete(String authToken){
-        try{
-            AUTH_DB.delete(authToken);
-        } catch (DataAccessException e) {
-            throw new IllegalArgumentException("Error: Database failed to delete authToken");
-        }
+    public static AuthData add(String username) throws DataAccessException{
+        String authToken = generateToken();
+        AUTH_DB.add(username, authToken);
+        AuthData data = new AuthData(username, authToken);
+        return data;
     }
 
-    public static void verify(String authToken){
-        try{
-            AUTH_DB.verify(authToken);
-        } catch (DataAccessException e) {
-            throw new IllegalArgumentException("Error: Database failed to verify authToken");
-        }
+    public static void delete(String authToken) throws DataAccessException{
+        AUTH_DB.delete(authToken);
     }
 
-    public static String getUsername(String authToken){
-        try{
-            return AUTH_DB.getUsername(authToken);
-        } catch (DataAccessException e) {
-            throw new IllegalArgumentException("Error: Database failed to return username");
-        }
+    public static void verify(String authToken) throws DataAccessException{
+        AUTH_DB.verify(authToken);
+    }
+
+    public static String getUsername(String authToken) throws DataAccessException{
+        return AUTH_DB.getUsername(authToken);
     }
 
     public static String generateToken() {
         return UUID.randomUUID().toString();
     }
+
+
 
 }

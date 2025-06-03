@@ -6,45 +6,33 @@ import sqlDAO.SQLGameDAO;
 import java.util.ArrayList;
 
 public class GameDAO {
-    private final static SQLGameDAO GAME_DB = new SQLGameDAO();
+    private final static SQLGameDAO GAME_DB;
 
-    public static void clear(){
-        try{
-            GAME_DB.clear();
-        } catch (DataAccessException e) {
-            throw new IllegalArgumentException("Error: Database was unable to clear games.");
+    static {
+        try {
+            GAME_DB = new SQLGameDAO();
+        } catch (DataAccessException e){
+            throw new IllegalArgumentException("Error: Failed to initialize Game_DB", e);
         }
     }
 
-    public static void create(GameData gameData){
-        try{
-            GAME_DB.create(gameData);
-        } catch (DataAccessException e) {
-            throw new IllegalArgumentException("Error: Database was unable to create game");
-        }
+    public static void clear() throws DataAccessException{
+        GAME_DB.clear();
     }
 
-    public static GameData get(int gameID){
-        try{
-            return GAME_DB.get(gameID);
-        } catch (DataAccessException e) {
-            throw new IllegalArgumentException("Error: Database was unable to retrieve game");
-        }
+    public static void create(GameData gameData) throws DataAccessException{
+        GAME_DB.create(gameData);
     }
 
-    public static ArrayList<GameData> list(){
-        try{
-            return GAME_DB.list();
-        } catch (DataAccessException e) {
-            throw new IllegalArgumentException("Error: Database was unable to generate list of current games");
-        }
+    public static GameData get(int gameID) throws DataAccessException{
+        return GAME_DB.get(gameID);
     }
 
-    public static void update(GameData data){
-        try{
-            GAME_DB.update(data);
-        } catch (DataAccessException e) {
-            throw new IllegalArgumentException("Error: Database was unable to update the current game");
-        }
+    public static ArrayList<GameData> list() throws DataAccessException{
+        return GAME_DB.list();
+    }
+
+    public static void update(GameData data) throws DataAccessException{
+        GAME_DB.update(data);
     }
 }

@@ -1,40 +1,32 @@
 package dataaccess;
 
-import memorydao.MemoryUserDAO;
 import sqlDAO.SQLUserDAO;
 import model.UserData;
 
-import javax.xml.crypto.Data;
-
 public class UserDAO {
-    private final static SQLUserDAO USERS = new SQLUserDAO();
-    public static void clear(){
-        try {
-            USERS.clear();
-        } catch (DataAccessException e){
-            throw new IllegalArgumentException("Error: Unable to clear user db");
-        }
+    private final static SQLUserDAO USER_DB;
 
-    }
-    public static void add(UserData data){
-        try{
-            USERS.add(data);
+    static {
+        try {
+            USER_DB = new SQLUserDAO();
         } catch (DataAccessException e){
-            throw new IllegalArgumentException("Error: Unable to add user");
+            throw new IllegalArgumentException("Error: Failed to initialize USER_DB", e);
         }
     }
 
-    public static UserData getUserData(String username){
-        try {
-            UserData data = USERS.get(username);
+    public static void clear() throws DataAccessException {
+        USER_DB.clear();
+    }
+    public static void add(UserData data) throws DataAccessException{
+        USER_DB.add(data);
+    }
+
+    public static UserData getUserData(String username) throws DataAccessException{
+            UserData data = USER_DB.get(username);
             if(data == null){
                 throw new IllegalArgumentException("Error: unauthorized");
             }
             return data;
-        } catch(DataAccessException e){
-            throw new IllegalArgumentException("Error: Unable to get user");
-        }
-
     }
 
 }
