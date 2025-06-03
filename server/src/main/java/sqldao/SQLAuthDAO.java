@@ -50,20 +50,6 @@ public class SQLAuthDAO {
         }
     }
 
-    public int size() throws DataAccessException {
-        String sqlRequest = "SELECT COUNT(*) FROM Auths";
-        try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sqlRequest);
-            ResultSet rs = statement.executeQuery()) {
-            if(rs.next()){
-                return rs.getInt(1);
-            }
-            return 0;
-        } catch (SQLException e) {
-             throw new DataAccessException("Error: Unable to return auth size", e);
-        }
-    }
-
     public void delete(String authToken) throws DataAccessException {
         verify(authToken);
         String sqlRequest = "DELETE FROM Auths WHERE authToken = ?";
