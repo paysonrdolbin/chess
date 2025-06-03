@@ -26,42 +26,10 @@ public class DatabaseManager {
              var preparedStatement = conn.prepareStatement(statement)) {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("failed to create database", e);
+            throw new DataAccessException("Error: failed to create database", e);
         }
     }
-
-    public static void createTables() throws DataAccessException {
-        try (Connection connection = getConnection();
-             Statement statement = connection.createStatement()) {
-            statement.execute("""
-                CREATE TABLE IF NOT EXISTS Users (
-                    username VARCHAR(255) PRIMARY KEY,
-                    password VARCHAR(255) NOT NULL,
-                    email VARCHAR(255)
-                );
-                """);
-
-            statement.execute("""
-                CREATE TABLE IF NOT EXISTS Auths (
-                    authToken VARCHAR(255) PRIMARY KEY,
-                    username VARCHAR(255) NOT NULL
-                );    
-            """);
-
-            statement.execute("""
-                CREATE TABLE IF NOT EXISTS Games (
-                    gameID INT PRIMARY KEY,
-                    whiteUsername VARCHAR(255),
-                    blackUsername VARCHAR(255),
-                    gameName VARCHAR(255),
-                    game TEXT
-                );
-            """);
-        } catch (SQLException e){
-            throw new DataAccessException("failed to create database", e);
-        }
-
-    }
+    
 
     /**
      * Create a connection to the database and sets the catalog based upon the
@@ -82,7 +50,7 @@ public class DatabaseManager {
             conn.setCatalog(databaseName);
             return conn;
         } catch (SQLException ex) {
-            throw new DataAccessException("failed to get connection", ex);
+            throw new DataAccessException("Error: failed to get connection", ex);
         }
     }
 
@@ -95,7 +63,7 @@ public class DatabaseManager {
             props.load(propStream);
             loadProperties(props);
         } catch (Exception ex) {
-            throw new RuntimeException("unable to process db.properties", ex);
+            throw new RuntimeException("Error: unable to process db.properties", ex);
         }
     }
 
