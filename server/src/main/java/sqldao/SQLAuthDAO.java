@@ -10,7 +10,7 @@ public class SQLAuthDAO {
 
     public SQLAuthDAO() throws DataAccessException{
         SQLUserDAO userSQL = new SQLUserDAO();
-        userSQL.configureDatabase();
+        userSQL.configureDatabase(createStatements);
     }
 
     public void add(String username, String authToken) throws DataAccessException {

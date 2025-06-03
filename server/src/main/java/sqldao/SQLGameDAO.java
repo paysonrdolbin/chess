@@ -14,7 +14,7 @@ public class SQLGameDAO{
 
     public SQLGameDAO() throws DataAccessException {
         SQLUserDAO userSQL = new SQLUserDAO();
-        userSQL.configureDatabase();
+        userSQL.configureDatabase(createStatements);
     }
 
     public void clear() throws DataAccessException {

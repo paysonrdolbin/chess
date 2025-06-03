@@ -9,7 +9,7 @@ import java.sql.*;
 public class SQLUserDAO {
 
     public SQLUserDAO() throws DataAccessException {
-        configureDatabase();
+        configureDatabase(createStatements);
     }
 
     public void add(UserData user) throws DataAccessException {
@@ -67,10 +67,10 @@ public class SQLUserDAO {
             """
     };
 
-    public void configureDatabase() throws DataAccessException{
+    public void configureDatabase(String[] statements) throws DataAccessException{
         DatabaseManager.createDatabase();
         try(Connection connection = DatabaseManager.getConnection()){
-            for(var statement : createStatements) {
+            for(var statement : statements) {
                 try (var preparedStatement = connection.prepareStatement(statement)) {
                     preparedStatement.executeUpdate();
                 }
