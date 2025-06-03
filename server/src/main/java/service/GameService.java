@@ -2,6 +2,7 @@ package service;
 
 import chess.ChessGame;
 import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import model.GameData;
 import response.ListGameShortResponse;
@@ -15,7 +16,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class GameService {
-    public CreateGameResponse create(CreateGameRequest request){
+    public CreateGameResponse create(CreateGameRequest request) throws DataAccessException{
         AuthDAO.verify(request.getAuthToken());
         int gameID = 1111 + new Random().nextInt(9000);
         GameData gameData = new GameData(gameID, null, null, request.getGameName(), new ChessGame());
@@ -23,7 +24,7 @@ public class GameService {
         return new CreateGameResponse(gameID);
     }
 
-    public void join(JoinGameRequest request){
+    public void join(JoinGameRequest request) throws DataAccessException {
         AuthDAO.verify(request.getAuthToken());
         String username = AuthDAO.getUsername(request.getAuthToken());
         GameData data = GameDAO.get(request.getGameID());
@@ -44,7 +45,7 @@ public class GameService {
         GameDAO.update(newData);
     }
 
-    public ListGamesResponse list(ListGamesRequest request){
+    public ListGamesResponse list(ListGamesRequest request) throws DataAccessException {
         AuthDAO.verify(request.getAuthToken());
         ArrayList<GameData> allGameData = GameDAO.list();
         ArrayList<ListGameShortResponse> allGameDetails = new ArrayList<>();

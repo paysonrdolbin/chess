@@ -1,6 +1,7 @@
 package service;
 
 import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
 import dataaccess.UserDAO;
 import model.AuthData;
 import model.UserData;
@@ -12,7 +13,7 @@ import response.LoginResponse;
 import response.RegisterResponse;
 
 public class UserService {
-    public RegisterResponse register(RegisterRequest request){
+    public RegisterResponse register(RegisterRequest request) throws DataAccessException {
         if(request.getUsername() == null || request.getPassword() == null || request.getEmail() == null){
             throw new IllegalArgumentException("Error: bad request");
         }
@@ -25,7 +26,7 @@ public class UserService {
         return response;
     }
 
-    public LoginResponse login(LoginRequest request){
+    public LoginResponse login(LoginRequest request) throws DataAccessException{
         // if either field is empty, throw bad request
         if(request.getUsername() == null || request.getPassword() == null){
             throw new IllegalArgumentException("Error: bad request");
@@ -42,7 +43,7 @@ public class UserService {
         }
     }
 
-    public void logout(LogoutRequest request){
+    public void logout(LogoutRequest request) throws DataAccessException {
         String authToken = request.getAuthToken();
         AuthDAO.delete(authToken);
     }
