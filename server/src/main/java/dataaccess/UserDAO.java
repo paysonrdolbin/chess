@@ -1,6 +1,6 @@
 package dataaccess;
 
-import sqlDAO.SQLUserDAO;
+import sqldao.SQLUserDAO;
 import model.UserData;
 
 public class UserDAO {

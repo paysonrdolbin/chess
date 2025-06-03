@@ -1,9 +1,7 @@
 package dataaccess;
 
-import memorydao.MemoryAuthDAO;
 import model.AuthData;
-import sqlDAO.SQLAuthDAO;
-import sqlDAO.SQLUserDAO;
+import sqldao.SQLAuthDAO;
 
 import java.util.UUID;
 
