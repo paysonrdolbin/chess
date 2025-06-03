@@ -1,5 +1,6 @@
 package service;
 
+import dataaccess.DataAccessException;
 import model.UserData;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,7 @@ public class GameServiceTest {
     private static UserService userService = new UserService();
     private static String userAuthorizedAuth;
     @BeforeAll
-    public static void beforeTest(){
+    public static void beforeTest() throws DataAccessException {
         RegisterRequest registerRequest = new RegisterRequest("user", "password", "email");
         userAuthorizedAuth = userService.register(registerRequest).getAuthToken();
     }
@@ -33,7 +34,7 @@ public class GameServiceTest {
     }
 
     @Test
-    public void testCreateFails(){
+    public void testCreateFails() throws DataAccessException{
         CreateGameRequest request = new CreateGameRequest("fakeAuthorizationToken", "gameName");
         try {
             CreateGameResponse response = service.create(request);
@@ -71,7 +72,7 @@ public class GameServiceTest {
     }
 
     @Test
-    public void listGameWorks(){
+    public void listGameWorks() throws DataAccessException{
         ClearService clearService = new ClearService();
         ClearRequest clearRequest = new ClearRequest();
         clearService.clearDB(clearRequest);

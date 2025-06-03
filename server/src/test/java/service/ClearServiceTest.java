@@ -1,6 +1,7 @@
 package service;
 
 import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
 import memorydao.MemoryAuthDAO;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ClearServiceTest {
     private ClearService clearService = new ClearService();
     @Test
-    public void clearWorks(){
+    public void clearWorks() throws DataAccessException {
         ClearRequest clearRequest = new ClearRequest();
         clearService.clearDB(clearRequest);
     }

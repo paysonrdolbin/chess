@@ -1,6 +1,7 @@
 package service;
 
 import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,7 @@ public class UserServiceTest {
     private static ClearService clearService = new ClearService();
     private static ClearRequest clearRequest = new ClearRequest();
     @BeforeEach
-    public void beforeTest(){
+    public void beforeTest() throws DataAccessException {
         clearService.clearDB(clearRequest);
     }
 
@@ -35,7 +36,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testRegisterFails(){
+    public void testRegisterFails() throws DataAccessException{
         try {
             RegisterRequest request = new RegisterRequest(null, "password", "email");
             userService.register(request);
