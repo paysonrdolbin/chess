@@ -1,4 +1,4 @@
-package response;
+package model;
 import chess.ChessGame;
 
 public class ListGameShortResponse {

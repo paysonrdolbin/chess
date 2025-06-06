@@ -1,6 +1,6 @@
 package response;
 
-import response.ListGameShortResponse;
+import model.ListGameShortResponse;
 
 import java.util.ArrayList;
 
@@ -14,4 +14,6 @@ public class ListGamesResponse {
     public ArrayList<ListGameShortResponse> getGames() {
         return games;
     }
+
+
 }
