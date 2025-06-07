@@ -1,6 +1,5 @@
 package handler;
 
-import chess.ChessGame;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import request.JoinJsonBody;

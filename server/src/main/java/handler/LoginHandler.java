@@ -1,7 +1,6 @@
 package handler;
 
 import dataaccess.DataAccessException;
-import model.UserData;
 import com.google.gson.Gson;
 import request.LoginRequest;
 import response.LoginResponse;
@@ -11,7 +10,6 @@ import spark.Route;
 import spark.Request;
 import spark.Response;
 
-import javax.xml.crypto.Data;
 import java.util.Map;
 
 
@@ -23,10 +21,9 @@ public class LoginHandler implements Route {
     }
     @Override
     public Object handle(Request req, Response res){
-        UserData user = gson.fromJson(req.body(), UserData.class);
         try{
             UserService service = new UserService();
-            LoginRequest loginRequest = new LoginRequest(user.getUsername(), user.getPassword());
+            LoginRequest loginRequest = gson.fromJson(req.body(), LoginRequest.class);
             LoginResponse servResponse = service.login(loginRequest);
             res.status(200);
             return gson.toJson(servResponse);
