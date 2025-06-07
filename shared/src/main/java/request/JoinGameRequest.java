@@ -11,7 +11,9 @@ public class JoinGameRequest {
         this.authToken = authToken;
         if(color == null){
             throw new IllegalArgumentException("Error: bad request");
-        } else if(color.equals("WHITE")){
+        }
+        color = color.toUpperCase();
+        if(color.equals("WHITE")){
             this.color = ChessGame.TeamColor.WHITE;
         } else if(color.equals("BLACK")){
             this.color = ChessGame.TeamColor.BLACK;
