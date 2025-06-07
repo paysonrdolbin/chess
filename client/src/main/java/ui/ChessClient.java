@@ -1,6 +1,9 @@
 package ui;
 
+import exception.ResponseException;
 import model.ListGameShortResponse;
+import response.ListGamesResponse;
+
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -12,6 +15,7 @@ public class ChessClient {
         System.out.println("♕ Welcome to Payson's Chess Server! ♕\nType 'help' to get started.");
         boolean loggedIn = false;
         boolean clientRunning = true;
+        ListGamesResponse gameListObject = null;
         ArrayList<ListGameShortResponse> gameList = new ArrayList<>();
         String preloginMessage = """
                     register [username] [password] [email] - Creates an account so you can play (Also logs you in :)
@@ -31,12 +35,26 @@ public class ChessClient {
                         System.out.println(preloginMessage);
                         break;
                     case "register":
-                        serverFacade.register(words[1], words[2], words[3]);
-                        loggedIn = true;
+                        if(words.length > 3) {
+                            try {
+                                serverFacade.register(words[1], words[2], words[3]);
+                                loggedIn = true;
+                            } catch (ResponseException e) {
+                                switch(e.StatusCode()){
+                                    case 400:
+                                        System.out.println("Check all fields are filled properly and try again.");
+                                        break;
+                                    case 401
+
+                                }
+                            }
+                        }
                         break;
                     case "login":
-                        serverFacade.login(words[1], words[2]);
-                        loggedIn = true;
+                        if(words.length > 2) {
+                            serverFacade.login(words[1], words[2]);
+                            loggedIn = true;
+                        }
                         break;
                     case "quit":
                         System.out.println("See ya!");
@@ -72,10 +90,12 @@ public class ChessClient {
                         break;
                     case "join":
                         if(words.length > 1) {
-                            serverFacade.join(int)
+                            int gameID = Integer.parseInt(words[1]);
+                            serverFacade.join(gameID, words[2]);
                         }
                     case "list":
-                        gameList = serverFacade.list();
+                        gameListObject = serverFacade.list();
+                        gameList = gameListObject.getGames();
                         int n = 1;
                         while (n <= gameList.size()) {
                             ListGameShortResponse game = gameList.get(n - 1);
@@ -86,9 +106,15 @@ public class ChessClient {
                         }
                         break;
                     case "observe":
-                        int gameIndex = Integer.parseInt(words[1]) - 1;
-                        int gameID = gameList.get(gameIndex).getGameID();
-                        serverFacade.observe(gameID);
+                        if(words.length > 1) {
+                            if(!gameList.isEmpty()) {
+                                int gameIndex = Integer.parseInt(words[1]) - 1;
+                                int gameID = gameList.get(gameIndex).getGameID();
+                                serverFacade.observe(gameID);
+                            } else{
+                                serverFacade.observe(Integer.parseInt(words[1]) - 1);
+                            }
+                        }
                         break;
                     case "quit":
                         System.out.println("See ya!");
