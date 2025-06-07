@@ -9,4 +9,12 @@ public class LoginResponse {
         this.username = data.getUsername();
         this.authToken = data.getAuthToken();
     }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getAuthToken() {
+        return authToken;
+    }
 }
