@@ -1,14 +1,11 @@
 package service;
 
 import dataaccess.DataAccessException;
-import model.UserData;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import response.*;
 import request.*;
-import response.CreateGameResponse;
-import response.ListGamesResponse;
-import service.GameService;
-import model.GameData;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class GameServiceTest {
