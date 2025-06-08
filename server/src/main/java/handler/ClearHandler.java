@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import request.ClearRequest;
 import service.ClearService;
+import service.ErrorService;
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -24,9 +25,19 @@ public class ClearHandler implements Route {
             service.clearDB(clearRequest);
             res.status(200);
             return "{}";
+        } catch (IllegalArgumentException e){
+            int statusCode = ErrorService.errorCode(e.getMessage());
+            res.status(statusCode);
+            return gson.toJson(Map.of(
+                    "message", e.getMessage(),
+                    "status", statusCode
+            ));
         } catch (DataAccessException e){
             res.status(500);
-            return gson.toJson(Map.of("message",e.getMessage()));
+            return gson.toJson(Map.of(
+                    "message", e.getMessage(),
+                    "status", 500
+            ));
         }
 
     }

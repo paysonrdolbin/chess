@@ -27,12 +27,19 @@ public class ListGamesHandler implements Route {
             ListGamesResponse response = service.list(request);
             res.status(200);
             return gson.toJson(response);
-        } catch(IllegalArgumentException e){
-            res.status(ErrorService.errorCode(e.getMessage()));
-            return gson.toJson(Map.of("message",e.getMessage()));
-        } catch(DataAccessException e){
+        } catch (IllegalArgumentException e){
+            int statusCode = ErrorService.errorCode(e.getMessage());
+            res.status(statusCode);
+            return gson.toJson(Map.of(
+                    "message", e.getMessage(),
+                    "status", statusCode
+            ));
+        } catch (DataAccessException e){
             res.status(500);
-            return gson.toJson(Map.of("message",e.getMessage()));
+            return gson.toJson(Map.of(
+                    "message", e.getMessage(),
+                    "status", 500
+            ));
         }
     }
 }
