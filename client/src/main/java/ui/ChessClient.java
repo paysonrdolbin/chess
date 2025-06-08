@@ -9,7 +9,11 @@ import java.util.Scanner;
 
 public class ChessClient {
     private final Scanner Scanner = new Scanner(System.in);
-    private final ServerFacade serverFacade = new ServerFacade();
+    private final ServerFacade serverFacade;
+
+    public ChessClient(String url){
+        serverFacade = new ServerFacade(url);
+    }
 
     public void run(){
         System.out.println("♕ Welcome to Payson's Chess Server! ♕\nType 'help' to get started.");
@@ -17,7 +21,7 @@ public class ChessClient {
         boolean clientRunning = true;
         ListGamesResponse gameListObject = null;
         ArrayList<ListGameShortResponse> gameList = new ArrayList<>();
-        String preloginMessage = """
+        String preLoginMessage = """
                     register [username] [password] [email] - Creates an account so you can play (Also logs you in :)
                     login [username] [password] - Logs you into your account.
                     quit - Quits your session.
@@ -32,44 +36,69 @@ public class ChessClient {
 
                 switch (words[0].toLowerCase()) {
                     case "help":
-                        System.out.println(preloginMessage);
+                        System.out.println(preLoginMessage);
                         break;
+
                     case "register":
                         if(words.length > 3) {
                             try {
                                 serverFacade.register(words[1], words[2], words[3]);
                                 loggedIn = true;
+                                System.out.println("Registered! You are now logged in.");
                             } catch (ResponseException e) {
                                 switch(e.StatusCode()){
                                     case 400:
                                         System.out.println("Check all fields are filled properly and try again.");
                                         break;
-                                    case 401
-
+                                    case 403:
+                                        System.out.println("Username already taken. Try again.");
+                                        break;
+                                    case 500:
+                                        System.out.println(e.getMessage());
+                                        break;
                                 }
                             }
                         }
                         break;
+
                     case "login":
                         if(words.length > 2) {
-                            serverFacade.login(words[1], words[2]);
-                            loggedIn = true;
+                            try {
+                                serverFacade.login(words[1], words[2]);
+                                System.out.println("Login Success.");
+                                loggedIn = true;
+                            } catch (ResponseException e) {
+                                switch(e.StatusCode()){
+                                    case 400:
+                                        System.out.println("Username does not exist.");
+                                        break;
+                                    case 401:
+                                        System.out.println("Invalid password");
+                                        break;
+                                    case 500:
+                                        System.out.println(e.getMessage());
+                                        break;
+                                }
+                            }
+                        } else{
+                            System.out.println("Please provide both a username and password");
                         }
                         break;
+
                     case "quit":
                         System.out.println("See ya!");
-                        clientRunning = false;
-                        break;
+                        return;
                 }
             }
 
             // post-login
-            while (clientRunning) {
+            while (loggedIn) {
                 System.out.println(">>> ");
                 String input = Scanner.nextLine();
                 String[] words = input.trim().split("\\s+");
 
                 switch (words[0].toLowerCase()) {
+
                     case "help":
                         System.out.println("""
                                 Here are your options:
@@ -83,26 +112,78 @@ public class ChessClient {
                                 help - See this message again. 
                                 """);
                         break;
+
                     case "create":
                         if (words.length > 1) {
-                            serverFacade.create(words[1]);
+                            try{
+                                serverFacade.create(words[1]);
+                                System.out.println("Game '" + words[1] + "' created");
+                            } catch (ResponseException e) {
+                                switch(e.StatusCode()){
+                                    case 400:
+                                        System.out.println("Bad request. Check the fields and try again.");
+                                        break;
+                                    case 401:
+                                        System.out.println("Sever error");
+                                    case 500:
+                                        System.out.println(e.getMessage());
+                                        break;
+                                }
+                            }
+                        } else{
+                            System.out.println("Please provide a game name.");
                         }
                         break;
+
                     case "join":
-                        if(words.length > 1) {
-                            int gameID = Integer.parseInt(words[1]);
-                            serverFacade.join(gameID, words[2]);
+                        if(words.length > 2) {
+                            try {
+                                int gameID = Integer.parseInt(words[1]);
+                                serverFacade.join(gameID, words[2]);
+                            } catch (ResponseException e) {
+                                switch(e.StatusCode()){
+                                    case 400:
+                                        System.out.println("Check game ID and team color and try again.");
+                                        break;
+                                    case 401:
+                                        System.out.println("System error");
+                                        break;
+                                    case 403:
+                                        System.out.println("Color already taken. Choose a vacant position");
+                                        break;
+                                    case 500:
+                                        System.out.println(e.getMessage());
+                                }
+                            }
+                        } else{
+                            System.out.println("Please provide a Game ID and a team color");
                         }
+                        break;
+
                     case "list":
-                        gameListObject = serverFacade.list();
-                        gameList = gameListObject.getGames();
-                        int n = 1;
-                        while (n <= gameList.size()) {
-                            ListGameShortResponse game = gameList.get(n - 1);
-                            String statement = n + ". " + game.getGameName() + "ID: " + game.getGameID() + " - White: "
-                                    + game.getWhiteUsername() + " Black: " + game.getBlackUsername();
-                            System.out.println(statement);
-                            n++;
+                        try {
+                            gameListObject = serverFacade.list();
+                            gameList = gameListObject.getGames();
+                            if(gameList.size() > 0){
+                                System.out.println("Here are the current games.");
+                                int n = 1;
+                                while (n <= gameList.size()) {
+                                    ListGameShortResponse game = gameList.get(n - 1);
+                                    String statement = n + ". " + game.getGameName() + ", ID: " + game.getGameID() + " - White: "
+                                            + game.getWhiteUsername() + " Black: " + game.getBlackUsername();
+                                    System.out.println(statement);
+                                    n++;
+                                }
+                            } else {
+                                System.out.println("There are no current games.");
+                            }
+
+                        } catch(ResponseException e){
+                            if(e.StatusCode() == 400){
+                                System.out.println("Server Error");
+                            } else{
+                                System.out.println(e.getMessage());
+                            }
                         }
                         break;
                     case "observe":
@@ -116,13 +197,20 @@ public class ChessClient {
                             }
                         }
                         break;
+
                     case "quit":
                         System.out.println("See ya!");
-                        clientRunning = false;
-                        break;
+                        return;
+
                     case "logout":
-                        serverFacade.logout();
-                        break;
+                        try{
+                            serverFacade.logout();
+                            loggedIn = false;
+                            System.out.println("Logout Successful");
+                            break;
+                        } catch (ResponseException e) {
+                            System.out.println("Server Error");
+                        }
                 }
 
             }
