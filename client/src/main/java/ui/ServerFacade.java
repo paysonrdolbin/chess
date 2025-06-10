@@ -43,7 +43,8 @@ public class ServerFacade {
         authToken = response.getAuthToken();
     }
 
-    public void observe(int gameID){}
+    public void observe(int gameID){
+    }
 
     public void join(int gameID, String teamColor) throws ResponseException{
         JoinJsonBody request = new JoinJsonBody(teamColor, gameID);
