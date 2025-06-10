@@ -1,11 +1,11 @@
 package client;
 
-import exception.ResponseException;
+import exception.responseException;
 import org.junit.jupiter.api.*;
 import server.Server;
 import ui.ServerFacade;
 import response.*;
-import request.*;
+
 import java.util.UUID;
 
 
@@ -48,7 +48,7 @@ public class ServerFacadeTests {
 
         facade.register(username, password, email);
 
-        Assertions.assertThrows(ResponseException.class, () ->
+        Assertions.assertThrows(responseException.class, () ->
                 facade.register(username, password, email)
         );
     }
@@ -71,7 +71,7 @@ public class ServerFacadeTests {
 
         facade.register(username, password, username + "@example.com");
 
-        Assertions.assertThrows(ResponseException.class, () ->
+        Assertions.assertThrows(responseException.class, () ->
                 facade.login(username, "wrongpassword")
         );
     }
@@ -91,7 +91,7 @@ public class ServerFacadeTests {
     public void createFailsBadAuth() {
         ServerFacade noAuthFacade = new ServerFacade("http://localhost:8080");
 
-        Assertions.assertThrows(ResponseException.class, () ->
+        Assertions.assertThrows(responseException.class, () ->
                 noAuthFacade.create("game")
         );
     }
@@ -111,7 +111,7 @@ public class ServerFacadeTests {
     public void listFailsNoAuth() {
         ServerFacade noAuthFacade = new ServerFacade("http://localhost:8080");
 
-        Assertions.assertThrows(ResponseException.class, () ->
+        Assertions.assertThrows(responseException.class, () ->
                 noAuthFacade.list()
         );
     }
@@ -134,7 +134,7 @@ public class ServerFacadeTests {
 
         facade.register(username, "password", username + "@example.com");
 
-        Assertions.assertThrows(ResponseException.class, () ->
+        Assertions.assertThrows(responseException.class, () ->
                 facade.join(-1, "WHITE")
         );
     }
@@ -152,7 +152,7 @@ public class ServerFacadeTests {
     public void logoutFailsNoAuth() {
         ServerFacade noAuthFacade = new ServerFacade("http://localhost:8080");
 
-        Assertions.assertThrows(ResponseException.class, () ->
+        Assertions.assertThrows(responseException.class, () ->
                 noAuthFacade.logout()
         );
     }

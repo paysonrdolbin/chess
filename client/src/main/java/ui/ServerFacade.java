@@ -1,11 +1,9 @@
 package ui;
 
-import model.ListGameShortResponse;
-
 import java.io.*;
 import java.net.*;
 import com.google.gson.Gson;
-import exception.ResponseException;
+import exception.responseException;
 import model.UserData;
 import request.*;
 import response.*;
@@ -18,26 +16,26 @@ public class ServerFacade {
         serverUrl = url;
     }
 
-    public int create(String gameName) throws ResponseException{
+    public int create(String gameName) throws responseException {
         CreateJsonBody request = new CreateJsonBody(gameName);
         CreateGameResponse response = makeRequest("POST", "/game", request, CreateGameResponse.class);
         return response.getGameID();
     }
-    public void logout() throws ResponseException{
+    public void logout() throws responseException {
         makeRequest("DELETE", "/session", null, LogoutResponse.class);
         authToken = null;
     }
-    public ListGamesResponse list() throws ResponseException{
+    public ListGamesResponse list() throws responseException {
         return makeRequest("GET", "/game", null, ListGamesResponse.class);
     }
 
-    public void register(String username, String password, String email) throws ResponseException{
+    public void register(String username, String password, String email) throws responseException {
         UserData user = new UserData(username, password, email);
         RegisterResponse response = makeRequest("POST", "/user", user, RegisterResponse.class);
         authToken = response.getAuthToken();
     }
 
-    public void login(String username, String password) throws ResponseException{
+    public void login(String username, String password) throws responseException {
         LoginRequest loginRequest = new LoginRequest(username, password);
         LoginResponse response = makeRequest("POST", "/session", loginRequest, LoginResponse.class);
         authToken = response.getAuthToken();
@@ -46,12 +44,12 @@ public class ServerFacade {
     public void observe(int gameID){
     }
 
-    public void join(int gameID, String teamColor) throws ResponseException{
+    public void join(int gameID, String teamColor) throws responseException {
         JoinJsonBody request = new JoinJsonBody(teamColor, gameID);
         JoinGameResponse response = makeRequest("PUT", "/game", request, JoinGameResponse.class);
     }
 
-    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException{
+    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws responseException {
         try{
             URL url = (new URI(serverUrl + path)).toURL();
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
@@ -65,10 +63,10 @@ public class ServerFacade {
             http.connect();
             throwIfNotSuccessful(http);
             return readBody(http, responseClass);
-        } catch (ResponseException e) {
+        } catch (responseException e) {
             throw e;
         } catch (Exception e){
-            throw new ResponseException(500, e.getMessage());
+            throw new responseException(500, e.getMessage());
         }
     }
 
@@ -84,16 +82,16 @@ public class ServerFacade {
         }
     }
 
-    private void throwIfNotSuccessful(HttpURLConnection http) throws IOException, ResponseException {
+    private void throwIfNotSuccessful(HttpURLConnection http) throws IOException, responseException {
         var status = http.getResponseCode();
         if(!isSuccessful(status)) {
             try(InputStream respErr = http.getErrorStream()){
                 if(respErr != null){
-                    throw ResponseException.fromJson(respErr);
+                    throw responseException.fromJson(respErr);
                 }
             }
 
-            throw new ResponseException(status, "other failure: " + status);
+            throw new responseException(status, "other failure: " + status);
         }
     }
 
