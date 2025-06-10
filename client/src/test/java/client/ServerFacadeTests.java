@@ -1,4 +1,4 @@
-package client;
+package java.client;
 
 import exception.ResponseException;
 import org.junit.jupiter.api.*;
