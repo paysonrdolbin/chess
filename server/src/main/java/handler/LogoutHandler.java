@@ -27,13 +27,8 @@ public class LogoutHandler implements Route {
 
             res.status(200);
             return "{}";
-        } catch (IllegalArgumentException e){
-            int statusCode = ErrorService.errorCode(e.getMessage());
-            res.status(statusCode);
-            return gson.toJson(Map.of("message", e.getMessage(), "status", statusCode));
-        } catch (DataAccessException e){
-            res.status(500);
-            return gson.toJson(Map.of("message", e.getMessage(), "status", 500));
+        } catch (Exception e) {
+            return ErrorService.handleException(e, res, gson);
         }
     }
 }
