@@ -4,13 +4,9 @@ import chess.ChessGame;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
-import model.GameData;
-import model.ListGameShortResponse;
-import request.CreateGameRequest;
-import request.JoinGameRequest;
-import request.ListGamesRequest;
-import response.CreateGameResponse;
-import response.ListGamesResponse;
+import model.*;
+import request.*;
+import response.*;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -61,4 +57,12 @@ public class GameService {
         }
         return new ListGamesResponse(allGameDetails);
     }
+
+    public ObserveGameResponse observe(ObserveGameRequest request) throws DataAccessException{
+        AuthDAO.verify(request.getAuthToken());
+        GameData data = GameDAO.get(request.getGameID());
+        return new ObserveGameResponse(data);
+
+    }
+
 }
