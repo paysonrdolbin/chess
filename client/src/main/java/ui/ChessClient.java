@@ -1,7 +1,7 @@
 package ui;
 
 import chess.ChessBoard;
-import exception.responseException;
+import exception.ResponseException;
 import model.ListGameShortResponse;
 import response.ListGamesResponse;
 
@@ -9,14 +9,15 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class ChessClient {
-    private final static Scanner Scanner = new Scanner(System.in);
+    private final static Scanner SCANNER = new Scanner(System.in);
     private final ServerFacade serverFacade;
     private boolean loggedIn = false;
     private boolean clientRunning = true;
     private ListGamesResponse gameListObject = null;
     private ArrayList<ListGameShortResponse> gameList = new ArrayList<>();
     private final String preLoginMessage = """
-                register [username] [password] [email] - Creates an account so you can play (Also logs you in :)
+                register [username] [password] [email] - Creates
+                 an account so you can play (Also logs you in :)
                 login [username] [password] - Logs you into your account.
                 quit - Quits your session.
                 help - See this message again.
@@ -33,7 +34,7 @@ public class ChessClient {
             // pre-login
             while (!loggedIn) {
                 System.out.println(">>> ");
-                String input = Scanner.nextLine();
+                String input = SCANNER.nextLine();
                 String[] words = input.trim().split("\\s+");
 
                 switch (words[0].toLowerCase()) {
@@ -58,7 +59,7 @@ public class ChessClient {
             // post-login
             while (loggedIn) {
                 System.out.println(">>> ");
-                String input = Scanner.nextLine();
+                String input = SCANNER.nextLine();
                 String[] words = input.trim().split("\\s+");
 
                 switch (words[0].toLowerCase()) {
@@ -106,8 +107,8 @@ public class ChessClient {
                 serverFacade.register(words[1], words[2], words[3]);
                 loggedIn = true;
                 System.out.println("Registered! You are now logged in.");
-            } catch (responseException e) {
-                switch(e.StatusCode()){
+            } catch (ResponseException e) {
+                switch(e.statusCode()){
                     case 400:
                         System.out.println("Check all fields are filled properly and try again.");
                         break;
@@ -128,8 +129,8 @@ public class ChessClient {
                 serverFacade.login(words[1], words[2]);
                 System.out.println("Login Success.");
                 loggedIn = true;
-            } catch (responseException e) {
-                switch(e.StatusCode()){
+            } catch (ResponseException e) {
+                switch(e.statusCode()){
                     case 400:
                         System.out.println("Username does not exist.");
                         break;
@@ -170,8 +171,8 @@ public class ChessClient {
             try{
                 serverFacade.create(words[1]);
                 System.out.println("Game '" + words[1] + "' created");
-            } catch (responseException e) {
-                switch(e.StatusCode()){
+            } catch (ResponseException e) {
+                switch(e.statusCode()){
                     case 400:
                         System.out.println("Bad request. Check the fields and try again.");
                         break;
@@ -206,8 +207,8 @@ public class ChessClient {
                         board.resetBoard();
                         ChessBoardUI.main(board);
                     }
-                } catch (responseException e) {
-                    switch(e.StatusCode()){
+                } catch (ResponseException e) {
+                    switch(e.statusCode()){
                         case 400:
                             System.out.println("Check game ID and team color and try again.");
                             break;
@@ -286,7 +287,7 @@ public class ChessClient {
             serverFacade.logout();
             loggedIn = false;
             System.out.println("Logout Successful");
-        } catch (responseException e) {
+        } catch (ResponseException e) {
             System.out.println("Server Error");
         }
     }
@@ -309,8 +310,8 @@ public class ChessClient {
                 System.out.println("There are no current games. Please create a game to begin.");
             }
 
-        } catch(responseException e){
-            if(e.StatusCode() == 400){
+        } catch(ResponseException e){
+            if(e.statusCode() == 400){
                 System.out.println("Server Error");
             } else{
                 System.out.println(e.getMessage());

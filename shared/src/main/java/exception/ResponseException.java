@@ -7,10 +7,10 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
-public class responseException extends Exception {
+public class ResponseException extends Exception {
     final private int statusCode;
 
-    public responseException(int statusCode, String message) {
+    public ResponseException(int statusCode, String message) {
         super(message);
         this.statusCode = statusCode;
     }
@@ -19,14 +19,14 @@ public class responseException extends Exception {
         return new Gson().toJson(Map.of("message", getMessage(), "status", statusCode));
     }
 
-    public static responseException fromJson(InputStream stream) {
+    public static ResponseException fromJson(InputStream stream) {
         var map = new Gson().fromJson(new InputStreamReader(stream), HashMap.class);
         var status = ((Double)map.get("status")).intValue();
         String message = map.get("message").toString();
-        return new responseException(status, message);
+        return new ResponseException(status, message);
     }
 
-    public int StatusCode() {
+    public int statusCode() {
         return statusCode;
     }
 }

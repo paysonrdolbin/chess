@@ -31,16 +31,10 @@ public class ObserveGameHandler implements Route {
         } catch (IllegalArgumentException e){
             int statusCode = ErrorService.errorCode(e.getMessage());
             res.status(statusCode);
-            return gson.toJson(Map.of(
-                    "message", e.getMessage(),
-                    "status", statusCode
-            ));
+            return gson.toJson(Map.of("message", e.getMessage(), "status", statusCode));
         } catch (DataAccessException e){
             res.status(500);
-            return gson.toJson(Map.of(
-                    "message", e.getMessage(),
-                    "status", 500
-            ));
+            return gson.toJson(Map.of("message", e.getMessage(), "status", 500));
         }
 
     }
