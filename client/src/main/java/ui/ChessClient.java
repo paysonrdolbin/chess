@@ -1,5 +1,6 @@
 package ui;
 
+import chess.ChessBoard;
 import exception.ResponseException;
 import model.ListGameShortResponse;
 import response.ListGamesResponse;
@@ -142,10 +143,18 @@ public class ChessClient {
                             if(gameListObject != null && !gameList.isEmpty()) {
                                 // if an ID has been provided, observe the game.
                                 try{
-                                int gameIndex = Integer.parseInt(words[1]) - 1;
-                                int gameID = gameList.get(gameIndex).getGameID();
-                                serverFacade.join(gameID, words[2]);
-                                System.out.println("Game joined!");
+                                    int gameIndex = Integer.parseInt(words[1]) - 1;
+                                    System.out.println("Please type 'join' followed by the ID and white/black.");
+                                    if(gameIndex >= gameList.size() || gameIndex < 0){
+                                        System.out.println("Please enter a valid game ID.");
+                                    } else {
+                                        int gameID = gameList.get(gameIndex).getGameID();
+                                        serverFacade.join(gameID, words[2]);
+                                        System.out.println("Game joined!");
+                                        ChessBoard board = new ChessBoard();
+                                        board.resetBoard();
+                                        ChessBoardUI.main(board);
+                                    }
                                 } catch (ResponseException e) {
                                     switch(e.StatusCode()){
                                         case 400:
@@ -159,7 +168,11 @@ public class ChessClient {
                                             break;
                                         case 500:
                                             System.out.println(e.getMessage());
+                                        default:
+                                            System.out.println("Please type 'join' followed by the game ID number and white/black.");
                                     }
+                                } catch (Exception e){
+                                    System.out.println("Please type 'join' followed by the ID number and white/black");
                                 }
                             } // if the user has made a list request, but there aren't any current games.
                             else if (gameListObject != null && gameList.isEmpty()){
@@ -187,12 +200,20 @@ public class ChessClient {
                         break;
 
                     case "observe":
-                        if(words.length > 2) {
+                        if(words.length > 1) {
                             if(gameListObject != null && !gameList.isEmpty()) {
                                 // if an ID has been provided, join the game.
+                                try {
                                     int gameIndex = Integer.parseInt(words[1]) - 1;
                                     int gameID = gameList.get(gameIndex).getGameID();
                                     serverFacade.observe(gameID);
+                                    System.out.println("You are now observing!");
+                                    ChessBoard board = new ChessBoard();
+                                    board.resetBoard();
+                                    ChessBoardUI.main(board);
+                                } catch (Exception e) {
+                                    System.out.println("Please type 'observe', followed by the game ID number.");
+                                }
                             } else if (gameListObject != null && gameList.isEmpty()){
                                 // if there are no current games.
                                 System.out.println("There are no current games. Please create a game to begin");
@@ -200,13 +221,13 @@ public class ChessClient {
                                 // if the games haven't been listed, provide a list.
                                 gameListObject = list(gameListObject, gameList);
                                 gameList = gameListObject.getGames();
-                                System.out.println("Please type 'observe' followed by the game ID number and white/black.");
+                                System.out.println("Please type 'observe' followed by the game ID number.");
                             }
                         } else {
                             // no ID provided
                             gameListObject = list(gameListObject, gameList);
                             gameList = gameListObject.getGames();
-                            System.out.println("Please type 'join' followed by the game ID number and white/black.");
+                            System.out.println("Please type 'join' followed by the game ID number.");
                         }
                         break;
 
