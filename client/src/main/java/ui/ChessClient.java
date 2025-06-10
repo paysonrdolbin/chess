@@ -73,7 +73,7 @@ public class ChessClient {
                                         System.out.println("Username does not exist.");
                                         break;
                                     case 401:
-                                        System.out.println("Invalid password");
+                                        System.out.println("Username or password is incorrect.");
                                         break;
                                     case 500:
                                         System.out.println(e.getMessage());
@@ -136,13 +136,16 @@ public class ChessClient {
                         break;
 
                     case "join":
+                        // if the user provided an ID # and a team color
                         if(words.length > 2) {
-                            if(gameList != null) {
+                            // if the user has made a list request, and the list wasn't empty
+                            if(gameListObject != null && !gameList.isEmpty()) {
                                 // if an ID has been provided, observe the game.
                                 try{
                                 int gameIndex = Integer.parseInt(words[1]) - 1;
                                 int gameID = gameList.get(gameIndex).getGameID();
                                 serverFacade.join(gameID, words[2]);
+                                System.out.println("Game joined!");
                                 } catch (ResponseException e) {
                                     switch(e.StatusCode()){
                                         case 400:
@@ -158,48 +161,52 @@ public class ChessClient {
                                             System.out.println(e.getMessage());
                                     }
                                 }
-                            } else if (gameList.isEmpty()){
+                            } // if the user has made a list request, but there aren't any current games.
+                            else if (gameListObject != null && gameList.isEmpty()){
                                 // if there are no current games.
                                 System.out.println("There are no current games. Please create a game to begin");
-                            } else {
+                            } // if the user hasn't made a list request, list the games.
+                            else {
                                 // if the games haven't been listed, provide a list.
-                                System.out.println("Here are the current games:");
-                                list(gameListObject, gameList);
+                                gameListObject = list(gameListObject, gameList);
+                                gameList = gameListObject.getGames();
                                 System.out.println("Please type 'join' followed by the game ID number and white/black.");
                             }
                         } else {
-                            // no ID provided
-                            System.out.println("Here are the current games:");
-                            list(gameListObject, gameList);
+                            // no ID provided, list the games and give instructions.
+                            gameListObject = list(gameListObject, gameList);
+                            gameList = gameListObject.getGames();
                             System.out.println("Please type 'join' followed by the game ID number and white/black.");
                         }
                         break;
 
 
                     case "list":
-                        list(gameListObject, gameList);
+                        gameListObject = list(gameListObject, gameList);
+                        gameList = gameListObject.getGames();
                         break;
+
                     case "observe":
-                        if(words.length > 1) {
-                            if(gameList != null) {
-                                // if an ID has been provided, observe the game.
-                                int gameIndex = Integer.parseInt(words[1]) - 1;
-                                int gameID = gameList.get(gameIndex).getGameID();
-                                serverFacade.observe(gameID);
-                            } else if (gameList.isEmpty()){
+                        if(words.length > 2) {
+                            if(gameListObject != null && !gameList.isEmpty()) {
+                                // if an ID has been provided, join the game.
+                                    int gameIndex = Integer.parseInt(words[1]) - 1;
+                                    int gameID = gameList.get(gameIndex).getGameID();
+                                    serverFacade.observe(gameID);
+                            } else if (gameListObject != null && gameList.isEmpty()){
                                 // if there are no current games.
                                 System.out.println("There are no current games. Please create a game to begin");
                             } else {
                                 // if the games haven't been listed, provide a list.
-                                System.out.println("Here are the current games:");
-                                list(gameListObject, gameList);
-                                System.out.println("Please type 'observe' followed by the game ID number.");
+                                gameListObject = list(gameListObject, gameList);
+                                gameList = gameListObject.getGames();
+                                System.out.println("Please type 'observe' followed by the game ID number and white/black.");
                             }
                         } else {
                             // no ID provided
-                            System.out.println("Here are the current games:");
-                            list(gameListObject, gameList);
-                            System.out.println("Please type 'observe' followed by the game ID number.");
+                            gameListObject = list(gameListObject, gameList);
+                            gameList = gameListObject.getGames();
+                            System.out.println("Please type 'join' followed by the game ID number and white/black.");
                         }
                         break;
 
@@ -222,15 +229,15 @@ public class ChessClient {
         }
     }
 
-    public void list(ListGamesResponse gameListObject, ArrayList<ListGameShortResponse> gameList){
+    public ListGamesResponse list(ListGamesResponse listResponse, ArrayList<ListGameShortResponse> games){
         try {
-            gameListObject = serverFacade.list();
-            gameList = gameListObject.getGames();
-            if(gameList.size() > 0){
-                System.out.println("Here are the current games.");
+            listResponse = serverFacade.list();
+            games = listResponse.getGames();
+            if(!games.isEmpty()){
+                System.out.println("Here are the current games:");
                 int n = 1;
-                while (n <= gameList.size()) {
-                    ListGameShortResponse game = gameList.get(n - 1);
+                while (n <= games.size()) {
+                    ListGameShortResponse game = games.get(n - 1);
                     String statement = n + ". " + game.getGameName() + ", ID: " + game.getGameID() + " - White: "
                             + game.getWhiteUsername() + " Black: " + game.getBlackUsername();
                     System.out.println(statement);
@@ -247,6 +254,7 @@ public class ChessClient {
                 System.out.println(e.getMessage());
             }
         }
+        return listResponse;
     }
 
 }
