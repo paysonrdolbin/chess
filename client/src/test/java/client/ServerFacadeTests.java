@@ -28,7 +28,7 @@ public class ServerFacadeTests {
 
     @Test
     public void registerWorks() throws Exception {
-        ServerFacade facade = new ServerFacade("http://localhost:8080");
+        ServerFacade facade = new ServerFacade("http://localhost:0");
 
         String username = "user" + UUID.randomUUID();
         String password = "password";
@@ -41,7 +41,7 @@ public class ServerFacadeTests {
 
     @Test
     public void registerFailsDuplicateUser() throws Exception {
-        ServerFacade facade = new ServerFacade("http://localhost:8080");
+        ServerFacade facade = new ServerFacade("http://localhost:0");
         String username = "user" + UUID.randomUUID();
         String password = "password";
         String email = "user@example.com";
@@ -55,7 +55,7 @@ public class ServerFacadeTests {
 
     @Test
     public void loginWorks() throws Exception {
-        ServerFacade facade = new ServerFacade("http://localhost:8080");
+        ServerFacade facade = new ServerFacade("http://localhost:0");
         String username = "user" + UUID.randomUUID();
         String password = "password";
 
@@ -65,7 +65,7 @@ public class ServerFacadeTests {
 
     @Test
     public void loginFailWrongPassword() throws Exception {
-        ServerFacade facade = new ServerFacade("http://localhost:8080");
+        ServerFacade facade = new ServerFacade("http://localhost:0");
         String username = "user" + UUID.randomUUID();
         String password = "password";
 
@@ -78,7 +78,7 @@ public class ServerFacadeTests {
 
     @Test
     public void createWorks() throws Exception {
-        ServerFacade facade = new ServerFacade("http://localhost:8080");
+        ServerFacade facade = new ServerFacade("http://localhost:0");
         String username = "user" + UUID.randomUUID();
 
         facade.register(username, "password", username + "@example.com");
@@ -89,7 +89,7 @@ public class ServerFacadeTests {
 
     @Test
     public void createFailsBadAuth() {
-        ServerFacade noAuthFacade = new ServerFacade("http://localhost:8080");
+        ServerFacade noAuthFacade = new ServerFacade("http://localhost:0");
 
         Assertions.assertThrows(ResponseException.class, () ->
                 noAuthFacade.create("game")
@@ -98,7 +98,7 @@ public class ServerFacadeTests {
 
     @Test
     public void listWorks() throws Exception {
-        ServerFacade facade = new ServerFacade("http://localhost:8080");
+        ServerFacade facade = new ServerFacade("http://localhost:0");
         String username = "user" + UUID.randomUUID();
 
         facade.register(username, "password", username + "@example.com");
@@ -109,7 +109,7 @@ public class ServerFacadeTests {
 
     @Test
     public void listFailsNoAuth() {
-        ServerFacade noAuthFacade = new ServerFacade("http://localhost:8080");
+        ServerFacade noAuthFacade = new ServerFacade("http://localhost:0");
 
         Assertions.assertThrows(ResponseException.class, () ->
                 noAuthFacade.list()
@@ -118,7 +118,7 @@ public class ServerFacadeTests {
 
     @Test
     public void joinWorks() throws Exception {
-        ServerFacade facade = new ServerFacade("http://localhost:8080");
+        ServerFacade facade = new ServerFacade("http://localhost:0");
         String username = "user" + UUID.randomUUID();
 
         facade.register(username, "password", username + "@example.com");
@@ -129,7 +129,7 @@ public class ServerFacadeTests {
 
     @Test
     public void joinFailsInvalidGame() throws Exception {
-        ServerFacade facade = new ServerFacade("http://localhost:8080");
+        ServerFacade facade = new ServerFacade("http://localhost:0");
         String username = "user" + UUID.randomUUID();
 
         facade.register(username, "password", username + "@example.com");
@@ -141,7 +141,7 @@ public class ServerFacadeTests {
 
     @Test
     public void logoutWorks() throws Exception {
-        ServerFacade facade = new ServerFacade("http://localhost:8080");
+        ServerFacade facade = new ServerFacade("http://localhost:0");
         String username = "user" + UUID.randomUUID();
 
         facade.register(username, "password", username + "@example.com");
@@ -150,7 +150,7 @@ public class ServerFacadeTests {
 
     @Test
     public void logoutFailsNoAuth() {
-        ServerFacade noAuthFacade = new ServerFacade("http://localhost:8080");
+        ServerFacade noAuthFacade = new ServerFacade("http://localhost:0");
 
         Assertions.assertThrows(ResponseException.class, () ->
                 noAuthFacade.logout()
