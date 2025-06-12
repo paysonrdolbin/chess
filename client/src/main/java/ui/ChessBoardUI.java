@@ -1,26 +1,34 @@
 package ui;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Random;
+import java.util.*;
 
 import static ui.EscapeSequences.*;
 
 public class ChessBoardUI {
 
-    public static void main(ChessBoard board) {
+    public static void main(ChessGame game, Boolean isWhite, ChessPosition pos) {
+
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+        ChessBoard board = game.getBoard();
 
         out.print(ERASE_SCREEN);
 
         headers(out);
 
-        drawBoard(out, board);
+        if (pos != null){
+            Collection<ChessMove> moves = game.validMoves(pos);
+            ArrayList<ChessPosition> endPositions = new ArrayList<>();
+            for(ChessMove move: moves){
+                endPositions.add(move.getEndPosition());
+            }
+            drawHBoard(out, board, isWhite, pos, endPositions);
+        } else {
+            drawBoard(out, board, isWhite);
+        }
 
         out.print(SET_BG_COLOR_BLACK);
         out.print(SET_TEXT_COLOR_WHITE);
@@ -32,35 +40,126 @@ public class ChessBoardUI {
         out.print("    a  b  c  d  e  f  g  h \n");
     }
 
-    private static void drawBoard(PrintStream out, ChessBoard board) {
-        for (int row = 8; row >= 1; row--) {
-            out.print(SET_BG_COLOR_BLACK);
-            out.print(SET_TEXT_COLOR_WHITE);
-            out.print(" " + Integer.toString(row) + " ");
-
-            for (int col = 1; col <= 8; col++) {
-                boolean isWhiteSquare = (row + col) % 2 == 0;
-
-                if (isWhiteSquare) {
-                    setWhite(out);
-                } else {
-                    setBlack(out);
+    public static void drawHBoard(PrintStream out, ChessBoard board, Boolean isWhite,
+                                  ChessPosition pos, ArrayList<ChessPosition> endPositions){
+        Set<Integer> hCols = new HashSet<Integer>();
+        int startCol = -1;
+        if (isWhite) {
+            for (int row = 8; row >= 1; row--) {
+                if(pos.getRow() == row){
+                    startCol = pos.getColumn();
                 }
-
-                ChessPiece piece = board.getPiece(new ChessPosition(row, col));
-                if (piece != null) {
-                    printPiece(out, piece);
+                for(ChessPosition position: endPositions){
+                    if(position.getRow() == row){
+                        hCols.add(position.getColumn());
+                    }
+                }
+                if (hCols.size() > 0 || startCol != -1) {
+                    drawHRow(out, board, row, true, hCols, startCol);
                 } else {
-                    out.print("   ");
+                    drawRow(out, board, row, true);
                 }
             }
-            out.print(SET_TEXT_COLOR_BLACK);
-            out.print(SET_BG_COLOR_BLACK);
-            out.println();
+        } else {
+            for (int row = 1; row <= 8; row++) {
+                for(ChessPosition position: endPositions){
+                    if(pos.getRow() == row){
+                        startCol = pos.getColumn();
+                    }
+                    if(position.getRow() == row){
+                        hCols.add(position.getColumn());
+                    }
+                }
+                if (hCols.size() > 0 || startCol != -1) {
+                    drawHRow(out, board, row, false, hCols, startCol);
+                } else {
+                    drawRow(out, board, row, false);
+                }
+            }
         }
         setBlack(out);
     }
 
+    private static void drawHRow(PrintStream out, ChessBoard board, int row,
+                                 Boolean leftToRight, Set<Integer> hCols, int startCol){
+        out.print(SET_BG_COLOR_BLACK);
+        out.print(SET_TEXT_COLOR_WHITE);
+        out.print(" " + row + " ");
+
+        int colStart = leftToRight ? 1 : 8;
+        int colEnd = leftToRight ? 8 : 1;
+        int step = leftToRight ? 1 : -1;
+
+        for (int col = colStart; leftToRight ? col <= colEnd : col >= colEnd; col += step) {
+            boolean isWhiteSquare = (row + col) % 2 == 0;
+
+            if (col == startCol){
+                setDarkGreen(out);
+            } else if (hCols.contains(col)) {
+                setGreen(out);
+            } else if (isWhiteSquare) {
+                setWhite(out);
+            } else {
+                setBlack(out);
+            }
+
+            ChessPiece piece = board.getPiece(new ChessPosition(row, col));
+            if (piece != null) {
+                printPiece(out, piece);
+            } else {
+                out.print("   ");
+            }
+        }
+
+        out.print(SET_TEXT_COLOR_BLACK);
+        out.print(SET_BG_COLOR_BLACK);
+        out.println();
+
+    }
+
+    private static void drawBoard(PrintStream out, ChessBoard board, Boolean isWhite) {
+        if (isWhite) {
+            for (int row = 8; row >= 1; row--) {
+                drawRow(out, board, row, true);
+            }
+        } else {
+            for (int row = 1; row <= 8; row++) {
+                drawRow(out, board, row, false);
+            }
+        }
+        setBlack(out);
+    }
+
+    private static void drawRow(PrintStream out, ChessBoard board, int row, boolean leftToRight) {
+        out.print(SET_BG_COLOR_BLACK);
+        out.print(SET_TEXT_COLOR_WHITE);
+        out.print(" " + row + " ");
+
+        int colStart = leftToRight ? 1 : 8;
+        int colEnd = leftToRight ? 8 : 1;
+        int step = leftToRight ? 1 : -1;
+
+        for (int col = colStart; leftToRight ? col <= colEnd : col >= colEnd; col += step) {
+            boolean isWhiteSquare = (row + col) % 2 == 0;
+
+            if (isWhiteSquare) {
+                setWhite(out);
+            } else {
+                setBlack(out);
+            }
+
+            ChessPiece piece = board.getPiece(new ChessPosition(row, col));
+            if (piece != null) {
+                printPiece(out, piece);
+            } else {
+                out.print("   ");
+            }
+        }
+
+        out.print(SET_TEXT_COLOR_BLACK);
+        out.print(SET_BG_COLOR_BLACK);
+        out.println();
+    }
 
     private static void setWhite(PrintStream out) {
         out.print(SET_BG_COLOR_WHITE);
@@ -71,6 +170,16 @@ public class ChessBoardUI {
     private static void setBlack(PrintStream out) {
         out.print(SET_BG_COLOR_LIGHT_GREY);
         out.print(SET_TEXT_COLOR_LIGHT_GREY);
+    }
+
+    private static void setDarkGreen(PrintStream out) {
+        out.print(SET_BG_COLOR_DARK_GREEN);
+        out.print(SET_TEXT_COLOR_DARK_GREEN);
+    }
+
+    private static void setGreen(PrintStream out){
+        out.print(SET_BG_COLOR_GREEN);
+        out.print(SET_TEXT_COLOR_GREEN);
     }
 
     private static void printPiece(PrintStream out, ChessPiece piece) {
@@ -119,7 +228,6 @@ public class ChessBoardUI {
                     break;
             }
         }
-
         out.print(type);
     }
 }
