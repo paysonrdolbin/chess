@@ -127,7 +127,7 @@ public class ChessClient {
                     handleGameplayHelp();
                     break;
                 case "redraw":
-                    ChessGame game = new ChessGame(); // replace with getting the chessboard from the server.
+                    ChessGame game = new ChessGame(); // replace with last updated game.
                     ChessBoardUI.main(game, isWhite, null);
                     break;
                 case "highlight":
