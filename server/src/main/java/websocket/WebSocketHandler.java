@@ -23,7 +23,7 @@ public class WebSocketHandler {
     public void onMessage(Session session, String message) throws IOException {
         JsonObject json = JsonParser.parseString(message).getAsJsonObject();
         String type = json.get("commandType").getAsString();
-        UserGameCommand command = null;
+        UserGameCommand command;
         switch (type) {
             case "CONNECT":
                 command = new Gson().fromJson(message, UserGameCommand.class);
@@ -47,6 +47,7 @@ public class WebSocketHandler {
     private void connect(UserGameCommand command, Session session) throws IOException {
         try {
             int gameID = command.getGameID();
+            AuthDAO.verify(command.getAuthToken());
             String username = AuthDAO.getUsername(command.getAuthToken());
             sessions.addSessionToGame(command.getGameID(), session);
             GameData data = GameDAO.get(gameID);
@@ -68,7 +69,7 @@ public class WebSocketHandler {
             String entryMsg = new Gson().toJson(entryNote);
             broadcastAllOtherUsers(gameID, session, entryMsg);
 
-        } catch (DataAccessException e) {
+        } catch (Exception e) {
             ServerMessage.ErrorMessage errorMessage = new ServerMessage.ErrorMessage("Internal Error. Please try again.");
             String msg = new Gson().toJson(errorMessage);
             broadcastRootUser(session, msg);
@@ -97,6 +98,10 @@ public class WebSocketHandler {
             if(color == null){
                 throw new Exception("You are observing and cannot make a move in this game.");
             }
+            if(game.getTeamTurn() != color){
+                throw new Exception("A move cannot be made during your opponent's turn.");
+            }
+
 
             game.makeMove(move);
             GameData updatedData = new GameData(gameID, data.getWhiteUsername(), data.getBlackUsername(), data.getGameName(), game);
@@ -172,7 +177,17 @@ public class WebSocketHandler {
             String authToken = command.getAuthToken();
             String username = AuthDAO.getUsername(authToken);
             GameData data = GameDAO.get(gameID);
+            String white = data.getWhiteUsername();
+            String black = data.getBlackUsername();
             ChessGame game = data.getGame();
+            if(game.isGameOver()){
+                throw new Exception("Game is already over. You cannot resign now.");
+            }
+
+            if (!username.equals(white) && !username.equals(black)) {
+                throw new Exception("You are observing, you may not resign.");
+            }
+
             game.setGameOver(true);
             GameData updatedData = new GameData(data.getGameID(), data.getWhiteUsername(), data.getBlackUsername(), data.getGameName(), game);
             GameDAO.update(updatedData);
@@ -182,6 +197,10 @@ public class WebSocketHandler {
 
         } catch(DataAccessException e){
             ServerMessage.ErrorMessage errorMessage = new ServerMessage.ErrorMessage("Internal Error");
+            String msg = new Gson().toJson(errorMessage);
+            broadcastRootUser(session, msg);
+        } catch(Exception e){
+            ServerMessage.ErrorMessage errorMessage = new ServerMessage.ErrorMessage(e.getMessage());
             String msg = new Gson().toJson(errorMessage);
             broadcastRootUser(session, msg);
         }
