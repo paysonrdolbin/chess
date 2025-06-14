@@ -157,7 +157,9 @@ public class ChessClient {
                         inGameplay = false;
                         break;
                     case "resign":
-                        wsFacade.resignGame();
+                        if(handleResign()) {
+                            wsFacade.resignGame();
+                        }
                         break;
                     default:
                         System.out.println("Please give a proper command.");
@@ -169,6 +171,18 @@ public class ChessClient {
                 System.out.println("Check your parameters and try again.");
             }
 
+        }
+    }
+
+    public boolean handleResign(){
+        System.out.println("Are you sure you want to resign? (Type yes or no.)");
+        System.out.println(">>> ");
+        String input = SCANNER.nextLine();
+        String[] words = input.trim().split("\\s+");
+        if(words[0].toLowerCase().equals("yes")){
+            return true;
+        } else{
+            return false;
         }
     }
 
