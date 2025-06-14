@@ -10,6 +10,8 @@ import ui.websocket.WebSocketFacade;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import static utils.MoveNotation.stringToPos;
+
 public class ChessClient {
     private final static Scanner SCANNER = new Scanner(System.in);
     private final ServerFacade serverFacade;
@@ -143,7 +145,7 @@ public class ChessClient {
                         ChessBoardUI.main(latestGame, isWhite, null);
                         break;
                     case "highlight":
-                        ChessPosition coord = decodePosition(words[1]);
+                        ChessPosition coord = stringToPos(words[1]);
                         ChessBoardUI.main(latestGame, isWhite, coord);
                         break;
                     case "move":
@@ -170,30 +172,10 @@ public class ChessClient {
         }
     }
 
-
-
-
-    private ChessPosition decodePosition(String pos){
-        int row = Integer.parseInt(pos.substring(1));
-        int col;
-        switch(pos.charAt(0)){
-            case 'a': col = 1; break;
-            case 'b': col = 2; break;
-            case 'c': col = 3; break;
-            case 'd': col = 4; break;
-            case 'e': col = 5; break;
-            case 'f': col = 6; break;
-            case 'g': col = 7; break;
-            case 'h': col = 8; break;
-            default: col = -1;
-        }
-        return new ChessPosition(row, col);
-    }
-
     private ChessMove handleMove(String[] words){
             ChessBoard board = latestGame.getBoard();
-            ChessPosition startPos = decodePosition(words[1]);
-            ChessPosition endPos = decodePosition(words[2]);
+            ChessPosition startPos = stringToPos(words[1]);
+            ChessPosition endPos = stringToPos(words[2]);
             ChessMove move;
             // deal with promotion pieces
 
