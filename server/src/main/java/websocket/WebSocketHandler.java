@@ -82,6 +82,7 @@ public class WebSocketHandler {
             GameData data = GameDAO.get(gameID);
             ChessGame game = data.getGame();
             ChessGame.TeamColor color = null;
+            ChessGame.TeamColor oppositeColor = null;
 
             // checks to make sure the game is over before allowing moves first.
             if(game.isGameOver()){
@@ -92,8 +93,10 @@ public class WebSocketHandler {
 
             if(data.getWhiteUsername() != null && data.getWhiteUsername().equals(username)){
                 color = ChessGame.TeamColor.WHITE;
+                oppositeColor = ChessGame.TeamColor.BLACK;
             } else if(data.getBlackUsername() != null && data.getBlackUsername().equals(username)){
                 color = ChessGame.TeamColor.BLACK;
+                oppositeColor = ChessGame.TeamColor.WHITE;
             }
             if(color == null){
                 throw new Exception("You are observing and cannot make a move in this game.");
@@ -118,15 +121,15 @@ public class WebSocketHandler {
             broadcastAllOtherUsers(gameID, session, moveNote);
 
             // checks if the game is in check, checkmate, or stalemate.
-            if(game.isInCheckmate(color)) {
-                ServerMessage.Notification checkmateNote = new ServerMessage.Notification(color + "is in checkmate! Game over.");
+            if(game.isInCheckmate(oppositeColor)) {
+                ServerMessage.Notification checkmateNote = new ServerMessage.Notification(color + " is in checkmate! Game over.");
                 String msg = new Gson().toJson(checkmateNote);
                 broadcastAllUsers(gameID, msg);
-            } else if(game.isInCheck(color)){
+            } else if(game.isInCheck(oppositeColor)){
                 ServerMessage.Notification checkNote = new ServerMessage.Notification(color + " is in check!");
                 String msg = new Gson().toJson(checkNote);
                 broadcastAllUsers(gameID, msg);
-            } else if(game.isInStalemate(color)) {
+            } else if(game.isInStalemate(oppositeColor)) {
                 ServerMessage.Notification staleNote = new ServerMessage.Notification("Stalemate! Game over.");
                 String msg = new Gson().toJson(staleNote);
                 broadcastAllUsers(gameID, msg);
