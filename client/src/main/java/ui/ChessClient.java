@@ -349,13 +349,11 @@ public class ChessClient {
                         System.out.println("Please enter a valid game ID.");
                     } else {
                         gameID = gameList.get(gameIndex).getGameID();
-                        if(words[2].toLowerCase().equals("white")){
-                            isWhite = true;
-                        } else if(words[2].toLowerCase().equals("black")){
-                            isWhite = false;
-                        } else{
+                        String color = words[2].toLowerCase();
+                        if (!color.equals("white") && !color.equals("black")) {
                             throw new IllegalArgumentException("Error: bad request");
                         }
+                        isWhite = color.equals("white");
                         serverFacade.join(gameID, words[2]);
                         System.out.println("Game joined!");
                         inGameplay = true;
