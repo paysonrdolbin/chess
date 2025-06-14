@@ -10,14 +10,14 @@ import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Set;
 
 import static utils.MoveNotation.posToString;
 
 @WebSocket
-public class wsHandler {
-    WebSocketSessions sessions = new WebSocketSessions();
+public class WebSocketHandler {
+
+    private final WebSocketSessions sessions = new WebSocketSessions();
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws IOException {
@@ -44,32 +44,27 @@ public class wsHandler {
         }
     }
 
-    private void connect(UserGameCommand command, Session session){
+    private void connect(UserGameCommand command, Session session) throws IOException {
         try {
-            String status = "white";
             int gameID = command.getGameID();
+            String username = AuthDAO.getUsername(command.getAuthToken());
             sessions.addSessionToGame(command.getGameID(), session);
-            ChessGame game = GameDAO.get(gameID).getGame();
+            GameData data = GameDAO.get(gameID);
+            ChessGame game = data.getGame();
+            String statusMessage;
+            if(data.getWhiteUsername() != null && data.getWhiteUsername().equals(username)){
+                statusMessage = "white";
+            } else if(data.getBlackUsername() != null && data.getBlackUsername().equals(username)){
+                statusMessage = "black";
+            } else {
+                statusMessage = "an observer";
+            }
             ServerMessage.LoadGameMessage loadMessage = new ServerMessage.LoadGameMessage(game);
             String msg = new Gson().toJson(loadMessage);
             broadcastRootUser(session, msg);
 
-            // notify everyone
-            String statusMessage;
-            switch(status){
-                case "white":
-                    statusMessage = "white";
-                    break;
-                case "black":
-                    statusMessage = "black";
-                    break;
-                case "observe":
-                    statusMessage = "an observer";
-                    break;
-                default:
-                    statusMessage = "a player";
-            }
-            ServerMessage.Notification entryNote = new ServerMessage.Notification(statusMessage);
+            String entryMessage = username + " joined as " + statusMessage;
+            ServerMessage.Notification entryNote = new ServerMessage.Notification(entryMessage);
             String entryMsg = new Gson().toJson(entryNote);
             broadcastAllOtherUsers(gameID, session, entryMsg);
 
@@ -80,10 +75,12 @@ public class wsHandler {
         }
     }
 
-    private void makeMove(UserGameCommand.MakeMoveCommand command, Session session){
+    private void makeMove(UserGameCommand.MakeMoveCommand command, Session session) throws IOException {
         try {
             int gameID = command.getGameID();
-            ChessGame game = GameDAO.get(gameID).getGame();
+            GameData data = GameDAO.get(gameID);
+            ChessGame game = data.getGame();
+            ChessGame.TeamColor color = null;
 
             // checks to make sure the game is over before allowing moves first.
             if(game.isGameOver()){
@@ -92,32 +89,45 @@ public class wsHandler {
             String username = AuthDAO.getUsername(command.getAuthToken());
             ChessMove move = command.getMove();
 
-            String color = "color"; // figure this part out!!
+            if(data.getWhiteUsername() != null && data.getWhiteUsername().equals(username)){
+                color = ChessGame.TeamColor.WHITE;
+            } else if(data.getBlackUsername() != null && data.getBlackUsername().equals(username)){
+                color = ChessGame.TeamColor.BLACK;
+            }
+            if(color == null){
+                throw new Exception("You are observing and cannot make a move in this game.");
+            }
 
             game.makeMove(move);
+            GameData updatedData = new GameData(gameID, data.getWhiteUsername(), data.getBlackUsername(), data.getGameName(), game);
+            GameDAO.update(updatedData);
+
             ServerMessage.LoadGameMessage message = new ServerMessage.LoadGameMessage(game);
+            String loadMsg = new Gson().toJson(message);
+            broadcastAllUsers(gameID, loadMsg);
             // broadcast message to all
             ServerMessage.Notification notification = new ServerMessage.Notification(
                     username + " has made the move " +
                              posToString(move.getStartPosition()) + " " + posToString(move.getEndPosition()));
-            // broadcast to all other users
+            String moveNote = new Gson().toJson(notification);
+            broadcastAllOtherUsers(gameID, session, moveNote);
 
             // checks if the game is in check, checkmate, or stalemate.
-            if(game.isInCheckmate()) {
+            if(game.isInCheckmate(color)) {
                 ServerMessage.Notification checkmateNote = new ServerMessage.Notification(color + "is in checkmate! Game over.");
                 String msg = new Gson().toJson(checkmateNote);
                 broadcastAllUsers(gameID, msg);
-            } else if(game.isInCheck()){
+            } else if(game.isInCheck(color)){
                 ServerMessage.Notification checkNote = new ServerMessage.Notification(color + " is in check!");
                 String msg = new Gson().toJson(checkNote);
                 broadcastAllUsers(gameID, msg);
-            } else if(game.isInStalemate()) {
+            } else if(game.isInStalemate(color)) {
                 ServerMessage.Notification staleNote = new ServerMessage.Notification("Stalemate! Game over.");
-                String msg = new Gson().toJson(message);
+                String msg = new Gson().toJson(staleNote);
                 broadcastAllUsers(gameID, msg);
             }
         } catch (InvalidMoveException e) {
-            ServerMessage.ErrorMessage message = new ServerMessage.ErrorMessage("This is an invalid move.");
+            ServerMessage.ErrorMessage message = new ServerMessage.ErrorMessage(e.getMessage());
             String msg = new Gson().toJson(message);
             broadcastRootUser(session, msg);
         } catch(Exception e){
@@ -127,16 +137,23 @@ public class wsHandler {
         }
     }
 
-    private void leaveGame(UserGameCommand command, Session session){
+    private void leaveGame(UserGameCommand command, Session session) throws IOException {
         try {
             int gameID = command.getGameID();
             String authToken = command.getAuthToken();
             String username = AuthDAO.getUsername(authToken);
-            GameData game = GameDAO.get(gameID);
-            // figure out how keep track of the session's status as an observer or as a player.
-            GameData updatedGame = new GameData(gameID, game.getWhiteUsername(), game.getBlackUsername(), game.getGameName(), game.getGame());
-            GameDAO.update(updatedGame);
+            GameData data = GameDAO.get(gameID);
+
+            if(data.getWhiteUsername() != null && data.getWhiteUsername().equals(username)){
+                GameData updatedGame = new GameData(gameID, null, data.getBlackUsername(), data.getGameName(), data.getGame());
+                GameDAO.update(updatedGame);
+            } else if(data.getBlackUsername() != null && data.getBlackUsername().equals(username)){
+                GameData updatedGame = new GameData(gameID, data.getWhiteUsername(), null, data.getGameName(), data.getGame());
+                GameDAO.update(updatedGame);
+            }
+
             sessions.removeSessionFromGame(command.getGameID(), session);
+            session.close();
             ServerMessage.Notification exitNote = new ServerMessage.Notification(username + " has left the game.");
             String msg = new Gson().toJson(exitNote);
             broadcastAllUsers(gameID, msg);
@@ -148,8 +165,9 @@ public class wsHandler {
         }
     }
 
-    private void resignGame(UserGameCommand command, Session session){
+    private void resignGame(UserGameCommand command, Session session) throws IOException {
         try {
+
             int gameID = command.getGameID();
             String authToken = command.getAuthToken();
             String username = AuthDAO.getUsername(authToken);
@@ -169,38 +187,23 @@ public class wsHandler {
         }
     }
 
-    public void broadcastAllUsers(int gameID, String message){
-        try{
+    public void broadcastAllUsers(int gameID, String message) throws IOException{
             Set<Session> allSessions = sessions.getSessionsForGame(gameID);
             for (Session session: allSessions){
                 session.getRemote().sendString(message);
             }
-        } catch(IOException e){
-            // figure out what to do here...
-        }
     }
 
-    public void broadcastAllOtherUsers(int gameID, Session rootSession, String message){
-        try{
+    public void broadcastAllOtherUsers(int gameID, Session rootSession, String message) throws IOException {
             Set<Session> allSessions = sessions.getSessionsForGame(gameID);
             for(Session session: allSessions){
                 if(!session.equals(rootSession)) {
                     session.getRemote().sendString(message);
                 }
             }
-
-        } catch(IOException e){
-            // figure out what to do here as well
-        }
     }
 
-    public void broadcastRootUser(Session rootSession, String message){
-        try{
-            rootSession.getRemote().sendString(message);
-        } catch (IOException e) {
-
-        }
+    public void broadcastRootUser(Session rootSession, String message) throws IOException {
+        rootSession.getRemote().sendString(message);
     }
-
-
 }
