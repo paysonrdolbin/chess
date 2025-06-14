@@ -4,6 +4,8 @@ import chess.*;
 import exception.ResponseException;
 import model.ListGameShortResponse;
 import response.ListGamesResponse;
+import ui.websocket.ServerMessageObserver;
+import ui.websocket.WebSocketFacade;
 
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -14,15 +16,17 @@ public class ChessClient {
     private boolean loggedIn = false;
     private boolean clientRunning = true;
     private boolean inGameplay = false;
-    private ListGamesResponse gameListObject = null;
     private ArrayList<ListGameShortResponse> gameList = new ArrayList<>();
     private boolean isWhite = false;
     private int gameID = 0;
+    private String authToken;
+    private ChessGame latestGame =  null;
+    private String url;
 
     private final String preLoginMessage = """
                 Here are your options:
                 
-                register [username] [password] [email] - Createsan account so you can play (Also logs you in :)
+                register [username] [password] [email] - Creates an account so you can play (Also logs you in :)
                 login [username] [password] - Logs you into your account.
                 quit - Quits your session.
                 help - See this message again.
@@ -30,6 +34,7 @@ public class ChessClient {
 
     public ChessClient(String url){
         serverFacade = new ServerFacade(url);
+        this.url = url;
     }
 
     public void run(){
@@ -38,8 +43,6 @@ public class ChessClient {
         while(clientRunning) {
             // pre-login
             preLogin();
-            // post-login
-            postLogin();
         }
     }
 
@@ -56,18 +59,18 @@ public class ChessClient {
 
                 case "register":
                     handleRegister(words);
-                    loggedIn = true;
-                    postLogin();
                     break;
 
                 case "login":
                     handleLogin(words);
-                    loggedIn = true;
                     break;
 
                 case "quit":
                     handleQuit();
                     return;
+                default:
+                    System.out.println("Please give a proper command.");
+                    handlePreLoginHelp();
             }
         }
     }
@@ -90,8 +93,6 @@ public class ChessClient {
 
                 case "join":
                     handleJoin(words);
-                    inGameplay = true;
-                    gameplay();
                     break;
 
                 case "list":
@@ -100,8 +101,6 @@ public class ChessClient {
 
                 case "observe":
                     handleObserve(words);
-                    inGameplay = true;
-                    gameplay();
                     break;
 
                 case "quit":
@@ -112,37 +111,63 @@ public class ChessClient {
                     handleLogout();
                     loggedIn = false;
                     break;
+
+                default:
+                    System.out.println("Please give a proper command.");
+                    handlePostLoginHelp();
             }
         }
     }
 
     public void gameplay(){
-        while(inGameplay){
-            System.out.println(">>> ");
-            String input = SCANNER.nextLine();
-            String[] words = input.trim().split("\\s+");
+        WebSocketFacade wsFacade = null;
+        try {
+            ServerMessageObserver smo = new ServerMessageObserver(this);
+            wsFacade = new WebSocketFacade(url, smo, gameID, authToken);
+            wsFacade.connectGame();
+        } catch(ResponseException e){
+            System.out.println("System error.");
+            inGameplay = false;
+        }
+        while (inGameplay) {
+            try {
+                System.out.println(">>> ");
+                String input = SCANNER.nextLine();
+                String[] words = input.trim().split("\\s+");
 
-            switch(words[1].toLowerCase()){
-                case "help":
-                    handleGameplayHelp();
-                    break;
-                case "redraw":
-                    ChessGame game = new ChessGame(); // replace with last updated game.
-                    ChessBoardUI.main(game, isWhite, null);
-                    break;
-                case "highlight":
-                    ChessGame game1 = new ChessGame(); // use the current board?? get board?? -- websocket
-                    ChessPosition coord = decodePosition(words[2]);
-                    ChessBoardUI.main(game1, isWhite, coord);
-                    break;
-                case "move":
-                    handleMove(words);
-                    break;
+                switch (words[0].toLowerCase()) {
+                    case "help":
+                        handleGameplayHelp();
+                        break;
+                    case "redraw":
+                        ChessBoardUI.main(latestGame, isWhite, null);
+                        break;
+                    case "highlight":
+                        ChessPosition coord = decodePosition(words[1]);
+                        ChessBoardUI.main(latestGame, isWhite, coord);
+                        break;
+                    case "move":
+                        ChessMove move = handleMove(words);
+                        wsFacade.makeMove(move);
+                        break;
+                    case "leave":
+                        wsFacade.leaveGame();
+                        inGameplay = false;
+                        break;
+                    case "resign":
+                        wsFacade.resignGame();
+                        break;
+                    default:
+                        System.out.println("Please give a proper command.");
+                        handleGameplayHelp();
+                }
+            } catch(ResponseException e){
+                System.out.println(e.getMessage());
+            } catch(Exception e){
+                System.out.println("Check your parameters and try again.");
             }
 
-
         }
-
     }
 
 
@@ -165,17 +190,16 @@ public class ChessClient {
         return new ChessPosition(row, col);
     }
 
-    private void handleMove(String[] words){
-        try {
-            ChessGame game1 = new ChessGame(); // use the current game from websocket
-            ChessBoard board = game1.getBoard();
+    private ChessMove handleMove(String[] words){
+            ChessBoard board = latestGame.getBoard();
             ChessPosition startPos = decodePosition(words[1]);
             ChessPosition endPos = decodePosition(words[2]);
             ChessMove move;
             // deal with promotion pieces
 
             // if the piece type is a pawn
-            if (board.getPiece(startPos).equals(ChessPiece.PieceType.PAWN)) {
+            ChessPiece piece = board.getPiece(startPos);
+            if (piece != null && piece.getPieceType() == ChessPiece.PieceType.PAWN) {
                 // if the end position is on the respective final row
                 if ((endPos.getRow() == 8 && isWhite == true) || (endPos.getRow() == 1 && isWhite == false)) {
                     // prompts the user for a promotion piece
@@ -185,7 +209,7 @@ public class ChessClient {
                     String[] words1 = input.trim().split("\\s");
                     ChessPiece.PieceType promotion = decodePieceType(words1[0].toLowerCase());
                     // they didn't give a right piece type -- provide options???
-                    if (promotion.equals(null)) {
+                    if (promotion == null) {
                         throw new IllegalArgumentException("Please provide a valid piece for promotion."); // fix this
                     }
                     move = new ChessMove(startPos, endPos, promotion);
@@ -196,13 +220,8 @@ public class ChessClient {
             } else {
                 move = new ChessMove(startPos, endPos, null);
             }
-            game1.makeMove(move);
-            // websocket update board with new move.
-            ChessBoardUI.main(game1, isWhite, null);
-        } catch(InvalidMoveException e){
-            System.out.println("Please provide a valid chess move in a similar format 'e4g6'.");
-            System.out.println("Use 'highlight' to see valid piece moves.");
-        }
+
+            return move;
     }
 
     private ChessPiece.PieceType decodePieceType(String input){
@@ -231,18 +250,13 @@ public class ChessClient {
         
         redraw - Draws an updated chess board. 
         leave - Removes you from the current game. 
-        move [chessmove] - Excecutes the given chess move if valid. (Chess move notation is required. ex: 'e4g6')
+        move [chessmove] - Executes the given chess move if valid. (Chess move notation is required. ex: 'e4 g6')
         resign - Forfeit the current game. 
         highlight [chess position] - Highlights all the valid moves for the piece at the given position.
         help - See this message again.
         """);
     }
 
-
-    private void handleResignation(){
-        System.out.println("You have resigned. You forfeit this match.");
-        // update the game board?
-    }
 
     private void handlePreLoginHelp() {
         System.out.println(preLoginMessage);
@@ -253,6 +267,9 @@ public class ChessClient {
             try {
                 serverFacade.register(words[1], words[2], words[3]);
                 System.out.println("Registered! You are now logged in.");
+                loggedIn = true;
+                authToken = serverFacade.getAuthToken();
+                postLogin();
             } catch (ResponseException e) {
                 switch(e.statusCode()){
                     case 400:
@@ -276,6 +293,9 @@ public class ChessClient {
             try {
                 serverFacade.login(words[1], words[2]);
                 System.out.println("Login Success.");
+                loggedIn = true;
+                authToken = serverFacade.getAuthToken();
+                postLogin();
             } catch (ResponseException e) {
                 switch(e.statusCode()){
                     case 400:
@@ -339,7 +359,7 @@ public class ChessClient {
         // if the user provided an ID # and a team color
         if(words.length > 2) {
             // if the user has made a list request, and the list wasn't empty
-            if(gameListObject != null && !gameList.isEmpty()) {
+            if(!gameList.isEmpty()) {
                 // if an ID has been provided, observe the game.
                 try{
                     int gameIndex = Integer.parseInt(words[1]) - 1;
@@ -356,8 +376,8 @@ public class ChessClient {
                         }
                         serverFacade.join(gameID, words[2]);
                         System.out.println("Game joined!");
-                        ChessGame game = new ChessGame(); // use websocket to get the game?
-                        ChessBoardUI.main(game, isWhite, null);
+                        inGameplay = true;
+                        gameplay();
                     }
                 } catch (ResponseException e) {
                     switch(e.statusCode()){
@@ -379,58 +399,68 @@ public class ChessClient {
                 } catch (Exception e){
                     System.out.println("Please type 'join' followed by the ID number and white/black");
                 }
-            } // if the user has made a list request, but there aren't any current games.
-            else if (gameListObject != null && gameList.isEmpty()){
-                // if there are no current games.
-                System.out.println("There are no current games. Please create a game to begin");
-            } // if the user hasn't made a list request, list the games.
+            }
             else {
                 // if the games haven't been listed, provide a list.
-                gameListObject = list(gameListObject, gameList);
-                gameList = gameListObject.getGames();
+                try {
+                    gameList = listGames();
+                } catch (ResponseException e) {
+                    System.out.println("There was a problem fetching the list of games. Please try again.");
+                    return;
+                }
                 System.out.println("Please type 'join' followed by the game ID number and white/black.");
             }
         } else {
             // no ID provided, list the games and give instructions.
-            gameListObject = list(gameListObject, gameList);
-            gameList = gameListObject.getGames();
+            try {
+                gameList = listGames();
+            } catch (ResponseException e) {
+                System.out.println("There was a problem fetching the list of games. Please try again.");
+                return;
+            }
             System.out.println("Please type 'join' followed by the game ID number and white/black.");
         }
     }
 
     private void handleList() {
-        gameListObject = list(gameListObject, gameList);
-        gameList = gameListObject.getGames();
+        try {
+            gameList = listGames();
+        } catch (ResponseException e) {
+            System.out.println("There was a problem fetching the list of games. Please try again.");
+        }
     }
 
     private void handleObserve(String[] words) {
         if(words.length > 1) {
-            if(gameListObject != null && !gameList.isEmpty()) {
+            if(!gameList.isEmpty()) {
                 // if an ID has been provided, join the game.
                 try {
                     int gameIndex = Integer.parseInt(words[1]) - 1;
                     gameID = gameList.get(gameIndex).getGameID();
-                    Boolean isWhite = true;
-                    serverFacade.observe(gameID);
                     System.out.println("You are now observing!");
-                    ChessGame game = new ChessGame();
-                    ChessBoardUI.main(game, isWhite, null);
+                    inGameplay = true;
+                    gameplay();
                 } catch (Exception e) {
                     System.out.println("Please type 'observe', followed by the game ID number.");
                 }
-            } else if (gameListObject != null && gameList.isEmpty()){
-                // if there are no current games.
-                System.out.println("There are no current games. Please create a game to begin");
             } else {
                 // if the games haven't been listed, provide a list.
-                gameListObject = list(gameListObject, gameList);
-                gameList = gameListObject.getGames();
+                try {
+                    gameList = listGames();
+                } catch (ResponseException e) {
+                    System.out.println("There was a problem fetching the list of games. Please try again.");
+                    return;
+                }
                 System.out.println("Please type 'observe' followed by the game ID number.");
             }
         } else {
             // no ID provided
-            gameListObject = list(gameListObject, gameList);
-            gameList = gameListObject.getGames();
+            try {
+                gameList = listGames();
+            } catch (ResponseException e) {
+                System.out.println("There was a problem fetching the list of games. Please try again.");
+                return;
+            }
             System.out.println("Please type 'observe' followed by the game ID number.");
         }
     }
@@ -444,43 +474,36 @@ public class ChessClient {
         }
     }
 
-    public ListGamesResponse list(ListGamesResponse listResponse, ArrayList<ListGameShortResponse> games){
-        try {
-            listResponse = serverFacade.list();
-            games = listResponse.getGames();
-            if(!games.isEmpty()){
-                System.out.println("Here are the current games:");
-                int n = 1;
-                while (n <= games.size()) {
-                    ListGameShortResponse game = games.get(n - 1);
-                    String whiteUsername;
-                    if(game.getWhiteUsername() == null){
-                        whiteUsername = "available";
-                    } else{
-                        whiteUsername = game.getWhiteUsername();
-                    } String blackUsername;
-                    if(game.getBlackUsername() == null){
-                        blackUsername = "available";
-                    } else{
-                        blackUsername = game.getBlackUsername();
-                    }
-                    String statement = n + ". " + game.getGameName() + ", ID: " + game.getGameID() + " - White: "
-                            + whiteUsername + " Black: " + blackUsername;
-                    System.out.println(statement);
-                    n++;
-                }
-            } else {
-                System.out.println("There are no current games. Please create a game to begin.");
-            }
+    public ArrayList<ListGameShortResponse> listGames() throws ResponseException {
+        ListGamesResponse response = serverFacade.list();
+        ArrayList<ListGameShortResponse> games = response.getGames();
 
-        } catch(ResponseException e){
-            if(e.statusCode() == 400){
-                System.out.println("Server Error");
-            } else{
-                System.out.println(e.getMessage());
+        if (games.isEmpty()) {
+            System.out.println("There are no current games. Please create a game to begin.");
+        } else {
+            System.out.println("Here are the current games:");
+            for (int i = 0; i < games.size(); i++) {
+                ListGameShortResponse game = games.get(i);
+                String white = (game.getWhiteUsername() != null) ? game.getWhiteUsername() : "available";
+                String black = (game.getBlackUsername() != null) ? game.getBlackUsername() : "available";
+                System.out.printf("%d. %s, ID: %d - White: %s Black: %s%n", i + 1, game.getGameName(), game.getGameID(), white, black);
             }
         }
-        return listResponse;
+
+        return games;
+    }
+
+    public void printGame(ChessGame game){
+        ChessBoardUI.main(game, isWhite, null);
+        latestGame = game;
+    }
+
+    public void printError(String errorMessage){
+        System.out.println(errorMessage);
+    }
+
+    public void printNotification(String notification){
+        System.out.println(notification);
     }
 
 }
