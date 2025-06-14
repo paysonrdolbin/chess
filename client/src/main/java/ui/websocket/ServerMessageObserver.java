@@ -15,7 +15,7 @@ public class ServerMessageObserver {
     }
 
     public void displayError(ServerMessage.ErrorMessage errorMessage){
-        client.printError(errorMessage.getMessage());
+        client.printError(errorMessage.getErrorMessage());
     }
 
     public void displayNotification(ServerMessage.Notification notification){

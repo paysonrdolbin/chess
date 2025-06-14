@@ -58,15 +58,15 @@ public class ServerMessage {
     }
 
     public static class ErrorMessage extends ServerMessage{
-        String message;
+        String errorMessage;
 
         public ErrorMessage(String errorMessage){
             super(ServerMessageType.ERROR);
-            this.message = errorMessage;
+            this.errorMessage = errorMessage;
         }
 
-        public String getMessage() {
-            return message;
+        public String getErrorMessage() {
+            return errorMessage;
         }
     }
 
