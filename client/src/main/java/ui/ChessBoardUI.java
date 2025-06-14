@@ -19,7 +19,7 @@ public class ChessBoardUI {
 
         headers(out, isWhite);
 
-        if (pos != null){
+        if (pos != null && board.getPiece(pos) != null){
             Collection<ChessMove> moves = game.validMoves(pos);
             ArrayList<ChessPosition> endPositions = new ArrayList<>();
             for(ChessMove move: moves){
