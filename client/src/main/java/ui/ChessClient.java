@@ -348,33 +348,8 @@ public class ChessClient {
                     if(gameIndex >= gameList.size() || gameIndex < 0){
                         System.out.println("Please enter a valid game ID.");
                     } else {
-                        gameID = gameList.get(gameIndex).getGameID();
                         String color = words[2].toLowerCase();
-                        if (!color.equals("white") && !color.equals("black")) {
-                            throw new IllegalArgumentException("Error: bad request");
-                        }
-                        isWhite = color.equals("white");
-                        serverFacade.join(gameID, words[2]);
-                        System.out.println("Game joined!");
-                        inGameplay = true;
-                        gameplay();
-                    }
-                } catch (ResponseException e) {
-                    switch(e.statusCode()){
-                        case 400:
-                            System.out.println("Check game ID and team color and try again.");
-                            break;
-                        case 401:
-                            System.out.println("System error");
-                            break;
-                        case 403:
-                            System.out.println("Color already taken. Choose a vacant position");
-                            break;
-                        case 500:
-                            System.out.println(e.getMessage());
-                            break;
-                        default:
-                            System.out.println("Please type 'join' followed by the game ID number and white/black.");
+                        tryJoinGame(gameIndex, color);
                     }
                 } catch (Exception e){
                     System.out.println("Please type 'join' followed by the ID number and white/black");
@@ -399,6 +374,37 @@ public class ChessClient {
                 return;
             }
             System.out.println("Please type 'join' followed by the game ID number and white/black.");
+        }
+    }
+
+    private void tryJoinGame(int gameIndex, String color) {
+        try {
+            gameID = gameList.get(gameIndex).getGameID();
+            if (!color.equals("white") && !color.equals("black")) {
+                throw new IllegalArgumentException("Error: bad request");
+            }
+            isWhite = color.equals("white");
+            serverFacade.join(gameID, color);
+            System.out.println("Game joined!");
+            inGameplay = true;
+            gameplay();
+        } catch (ResponseException e) {
+            switch (e.statusCode()) {
+                case 400:
+                    System.out.println("Check game ID and team color and try again.");
+                    break;
+                case 401:
+                    System.out.println("System error");
+                    break;
+                case 403:
+                    System.out.println("Color already taken. Choose a vacant position");
+                    break;
+                case 500:
+                    System.out.println(e.getMessage());
+                    break;
+                default:
+                    System.out.println("Please type 'join' followed by the game ID number and white/black.");
+            }
         }
     }
 
